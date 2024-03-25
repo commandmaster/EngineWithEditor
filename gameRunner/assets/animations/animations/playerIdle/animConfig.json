@@ -1,0 +1,11 @@
+{
+    "name": "playerIdle",
+    "type": "spriteSheet",
+    "sheetPath": "/assets/animations/playerIdle.png",
+    "frameStartIndex": 0,
+    "frameEndIndex": 14,
+    "framesAcross": 14,
+    "framesDown": 1,
+    "speed": 1,
+    "size":1
+}

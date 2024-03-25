@@ -1,0 +1,22 @@
+{
+  "name": "engine-with-editor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main.js"
+  },
+  "keywords": [
+    "js",
+    "game",
+    "engine",
+    "superdupercool"
+  ],
+  "author": "Bennett Friesen",
+  "license": "ISC",
+  "dependencies": {
+    "@bennettf/simpledb": "^1.1.1",
+    "electron": "^29.1.5",
+    "nodemon": "^3.1.0"
+  }
+}

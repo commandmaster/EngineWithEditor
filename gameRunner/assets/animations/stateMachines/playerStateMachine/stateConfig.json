@@ -1,0 +1,23 @@
+{
+    "name":"playerStateMachine",
+    "animations":[
+        {
+            "name":"playerIdle"
+        }
+    ],
+    "states":{
+        "playerIdle":{
+            "transitions":[
+                {
+                    "conditionType":"bool",
+                    "defaultValue":true,
+                    "conditionName":"atRest",
+                    "targetAnim":"playerIdle",
+                    "transitionTime":0.1,
+                    "transitionType":"fadeOpacity"
+                }
+            ]
+        }
+    },
+    "defaultState":"playerIdle"
+}

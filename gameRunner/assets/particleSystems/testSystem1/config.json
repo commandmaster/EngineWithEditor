@@ -1,0 +1,66 @@
+{
+    "name": "testSystem1",
+    "spawningSpace": "local",
+    "emitters":{
+        "emitter1": {
+            "name": "emitter1",
+            "startAttributes": {
+                "lifeSpan": 5000,
+                "position": {"x": 0, "y": 0},
+                "velocity": {"x1": -1, "y1": -1, "x2": 1, "y2": 1, "scalar": 50},
+                "acceleration": {"x1": 0, "y1": 1, "x2": 0, "y2": 1, "scalar": 20},
+                "rotation":{"z1": 0, "z2": 0},
+                "angularVelocity": {"z1": 0, "z2": 0}
+            },
+            "renderAttributes": {
+                "textureName": "particles-single"
+            },
+            "spawnBehavior": {
+                "spawnDelay": 0,
+                "amountOfBursts": 1,
+                "burstInterval": 0,
+                "burstCount": 10,
+                "continuousRate": 10,
+                "maxParticleCount": 100,
+                "spawnRadius": 1000
+            },
+            "overLifetime": {
+                "colorOverTimeData": {"curve":"linear", "color1": {"r": 255, "g": 0, "b": 0}, "color2": {"r": 0, "g": 0, "b": 255}},
+                "sizeOverTimeData": {"curve":"linear", "size1": 0.1, "size2": 0.01 },
+                "transparencyOverTimeData": {"curve":"linear", "transparency1": 1000, "transparency2": 0}
+            }
+
+        },
+        "emitter2": {
+            "name": "emitter2",
+            "startAttributes": {
+                "lifeSpan": 1000,
+                "position": {"x": 0, "y": 0},
+                "velocity": {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "scalar": 0},
+                "acceleration": {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "scalar": 0},
+                "rotation":{"z1": 0, "z2": 0},
+                "angularVelocity": {"z1": 0, "z2": 0}
+            },
+            "renderAttributes": {
+                "textureName": "particles-single"
+            },
+            "spawnBehavior": {
+                "spawnDelay": 0,
+                "amountOfBursts": 3,
+                "burstInterval": 1000,
+                "burstCount": 1,
+                "continuousRate": 0,
+                "maxParticleCount": 100,
+                "spawnRadius": 10
+            },
+            "overLifetime": {
+                "colorOverTimeData": {"curve":"linear", "color1": {"r": 255, "g": 255, "b": 0}, "color2": {"r": 0, "g": 255, "b": 255}},
+                "sizeOverTimeData": {"curve":"linear", "size1": 0.1, "size2": 3 },
+                "transparencyOverTimeData": {"curve":"linear", "transparency1": 500, "transparency2": 50}
+            }
+
+        }
+    }
+    
+}
+
