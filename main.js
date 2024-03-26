@@ -12,6 +12,35 @@ const {dialog, app, BrowserWindow, Menu, shell, ipcMain,  nativeTheme, BrowserVi
 
 let currentProject = {folderPath: null, projectName: null, gameConfigPath: null, gameConfigData: null};
 let projectLoaded = false;
+let edtiorLoaded = false;
+
+
+function waitForCondition(condition, timeBetweenChecks = 50){
+    return new Promise((resolve, reject) => {
+        let interval = setInterval(() => {
+            if (typeof condition !== "function" && typeof condition !== "boolean"){
+                console.error("Condition must be a function (function should also return a boolean) or a boolean value.");
+                reject("Condition must be a function or a boolean value.");
+            }
+
+            else if (typeof condition === "boolean"){
+                if (condition){
+                    clearInterval(interval);
+                    resolve();
+                }
+            }
+
+            else if (typeof condition === "function"){
+                if (condition()){
+                    clearInterval(interval);
+                    resolve();
+                }
+            }
+            
+        }, timeBetweenChecks);
+    });
+}
+
 
 app.on('ready', function(){
 
@@ -20,7 +49,7 @@ app.on('ready', function(){
 
     mainWindow = new BrowserWindow({
         webPreferences: {
-            preload: path.join(__dirname, 'editor/preload.js')
+            preload: path.join(__dirname, 'preload.js')
           }
     });
 
@@ -29,6 +58,23 @@ app.on('ready', function(){
         protocol:'file:',
         slashes: true
     }));
+
+    mainWindow.webContents.on('did-finish-load', () => {
+        edtiorLoaded = true;
+    });
+
+    ipcMain.on('saveProject', (e, projectData) => {
+        if (!projectLoaded) return;
+
+        projectData = JSON.parse(projectData);
+        const projectDir = projectData.folderPath;
+        const gameConfigPath = path.join(projectDir, 'gameConfig.json');
+        const gameConfigData = JSON.stringify(projectData.gameConfigData);
+
+        fs.writeFile(gameConfigPath, gameConfigData, (err) => {
+            if (err) throw err;
+        });
+    });
 
     mainWindow.on('closed', () => {
         app.quit();
@@ -59,6 +105,10 @@ app.on('ready', function(){
         currentProject = {folderPath: pathToFolder, projectName: projectName, gameConfigPath: gameConfigPath, gameConfigData: gameConfigData};
         projectLoaded = true;
 
+        waitForCondition(edtiorLoaded).then(() => {
+            mainWindow.webContents.send('projectLoaded', currentProject);
+        });
+
         console.log("Project Loaded: " + currentProject.projectName);
     }
     
@@ -72,12 +122,6 @@ app.on('ready', function(){
                         createNewProject();
                     }
                 },
-
-                {
-                    label: 'Save Project',
-                    click(){}
-                },
-
                 {
                     label: 'Load Project',
                     async click(){
@@ -88,7 +132,6 @@ app.on('ready', function(){
                         loadProject(projectDir.filePaths[0]);
                     }
                 },
-
                 {
                     label: 'Quit',
                     click(){app.quit();}
