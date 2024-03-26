@@ -2,13 +2,24 @@
     "assets":{
         "assetsPath":"D:/Git/EngineWithEditor/gameRunner/assets/",
         "animations":{
-            
+            "playerIdle":{
+                "stateMachine":"playerStateMachine",
+                "animationName":"playerIdle",
+                "pathToSpriteSheet":"./assets/animations/animations/playerIdle/playerIdle.png",
+                "pathToAnimationConfig":"./assets/animations/animations/playerIdle/animConfig.json"
+            }
         },
         "stateMachines":{
-           
+            "playerStateMachine":{
+                "stateMachineName":"playerStateMachine",
+                "pathToStateMachineConfig":"./assets/animations/stateMachines/playerStateMachine/stateConfig.json"
+            }
         },
         "textures":[
-          
+            {
+                "name":"particles-single",
+                "path":"./assets/textures/particles-single.png"
+            }
         ],
         "audio":[
 
@@ -18,7 +29,7 @@
         ],
         "inputs":[
             {
-                "inputName":"Jump",
+                "inputName":"jump",
                 "binds":[
                     {"key":"SPACE", "value":true}
                 ],
@@ -51,39 +62,194 @@
 
         ],
         "scripts":[
-            
+            "playerMovement"
         ],
         "particleSystems":{
-           
+            "testSystem1":{
+                "name":"testSystem1",
+                "pathToParticleSystemConfig":"./assets/particleSystems/testSystem1/config.json"
+            }
         }
     },
     "scenes":{
         "level1":{
             "cameraConfig":{
                 "startingPosition":{
-                    "x":0,
+                    "x":-500,
                     "y":0
                 },
                 "defaultViewAmount":1920,
                 "zoom":1,
-                "willFollow":false,
+                "willFollow":true,
                 "followSettings":{
-                    
+                    "objectToFollow":"player1",
+                    "followSmoothness":0.1,
+                    "deadZone":{
+                        "x":50,
+                        "y":50
+                    }
                 }
             },
             "gameObjects":{
-          
+                "player1":{
+                    "name":"player1",
+                    "prefab":"player",
+                    "parent":"world",
+                    "overideComponents":{
+                        "Transform":{
+                            "position":{
+                                "x":250,
+                                "y":100
+                            },
+                            "rotation":0,
+                            "scale":{
+                                "x":1,
+                                "y":1
+                            }
+                        },
+                        "ParticleSystem":{
+                            "name":"testSystem1"
+                        },
+                        "ScriptingComponent":{
+                            "scripts":[
+                                {
+                                    "name":"playerMovement"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "player2":{
+                    "name":"player2",
+                    "prefab":"player",
+                    "parent":"player1",
+                    "overideComponents":{
+                        "Transform":{
+                            "position":{
+                                "x":200,
+                                "y":0
+                            },
+                            "rotation":-45,
+                            "scale":{
+                                "x":1,
+                                "y":1
+                            }
+                        },
+                        "Rigidbody":null
+                    }
+                },
+                "player3":{
+                    "name":"player3",
+                    "prefab":"player",
+                    "parent":"player2",
+                    "overideComponents":{
+                        "Transform":{
+                            "position":{
+                                "x":400,
+                                "y":0
+                            },
+                            "rotation":0,
+                            "scale":{
+                                "x":1,
+                                "y":1
+                            }
+                        },
+                        "Rigidbody":null
+                    }
+                },
+                "ground1":{
+                    "name":"ground1",
+                    "prefab":"ground",
+                    "parent":"world",
+                    "overideComponents":{
+                        
+                    }
+                }
             }
         }
         
     },
     "prefabs":{
-        
+        "player":{
+            "name":"player",
+            "components":{
+                "Transform":{
+                    "position":{
+                        "x":0,
+                        "y":0
+                    },
+                    "rotation":0,
+                    "scale":{
+                        "x":1,
+                        "y":1
+                    }
+                },
+                "Rigidbody":{
+                    "matterBodyConfig":{
+                        "isStatic":false,
+                        "mass":10,
+                        "friction":0,
+                        "frictionAir":0.01
+                    },
+                    "colliders":[
+                        {
+                            "type":"box",
+                            "width":50,
+                            "height":50,
+                            "offsetX":150,
+                            "offsetY":0
+                        },
+                        {
+                            "type":"circle",
+                            "radius":100,
+                            "offsetX":0,
+                            "offsetY":0
+                        }
+                    ]
+                },
+                "StateMachine":{
+                    "stateMachineName":"playerStateMachine"
+                }
+            }
+        },
+        "ground":{
+            "name":"ground",
+            "components":{
+                "Transform":{
+                    "position":{
+                        "x":0,
+                        "y":1000
+                    },
+                    "rotation":0,
+                    "scale":{
+                        "x":1,
+                        "y":1
+                    }
+                },
+                "Rigidbody":{
+                    "matterBodyConfig":{
+                        "isStatic":true,
+                        "mass":1000,
+                        "friction":0.5,
+                        "frictionAir":0.01
+                    },
+                    "colliders":[
+                        {
+                            "type":"box",
+                            "width":800,
+                            "height":50,
+                            "offsetX":0,
+                            "offsetY":0
+                        }
+                    ]
+                }
+            }
+        }
     },
     "renderSettings":{
         "backgroundColor":"black",
-        "canvasSizeX":1920,
-        "canvasSizeY":1080,
+        "canvasSizeX":800,
+        "canvasSizeY":600,
         "resizeCanvas":true
     }
 }

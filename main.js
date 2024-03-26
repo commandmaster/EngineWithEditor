@@ -10,6 +10,8 @@ const Database = require('@bennettf/simpledb'); // My custom js json manipulatio
 
 const {dialog, app, BrowserWindow, Menu, shell, ipcMain,  nativeTheme, BrowserView} = electron;
 
+let currentProject = {folderPath: null, projectName: null, gameConfigPath: null, gameConfigData: null};
+let projectLoaded = false;
 
 app.on('ready', function(){
 
@@ -42,12 +44,22 @@ app.on('ready', function(){
 
         fsExtra.copy(path.join(__dirname, '/templates/projectTemplate'), folderPath, (err) => {
             if (err) throw err;
+
+            loadProject(folderPath);
         });
+
+        
     }
 
     async function loadProject(pathToFolder){
         const projectName = path.basename(pathToFolder);
-        const gameDB = Database.loadDB(path.join(pathToFolder, 'gameDB.json'));
+        const gameConfigPath = path.join(pathToFolder, 'gameConfig.json');
+        const gameConfigData = await fs.promises.readFile(gameConfigPath, 'utf8');
+
+        currentProject = {folderPath: pathToFolder, projectName: projectName, gameConfigPath: gameConfigPath, gameConfigData: gameConfigData};
+        projectLoaded = true;
+
+        console.log("Project Loaded: " + currentProject.projectName);
     }
     
     const mainMenuTemplate = [
@@ -56,16 +68,8 @@ app.on('ready', function(){
             submenu:[
                 {
                     label: 'New Project',
-                    async click(){
-                        const projectDir = await dialog.showOpenDialog(mainWindow, {
-                            properties: ['openDirectory']
-                        });
-
-                        const folderPath = projectDir.filePaths[0];
-
-                        fsExtra.copy(path.join(__dirname, '/templates/projectTemplate'), folderPath, (err) => {
-                            if (err) throw err;
-                        });
+                    click(){
+                        createNewProject();
                     }
                 },
 
@@ -76,7 +80,13 @@ app.on('ready', function(){
 
                 {
                     label: 'Load Project',
-                    click(){}
+                    async click(){
+                        const projectDir = await dialog.showOpenDialog(mainWindow, {
+                            properties: ['openDirectory']
+                        });
+
+                        loadProject(projectDir.filePaths[0]);
+                    }
                 },
 
                 {
@@ -88,48 +98,13 @@ app.on('ready', function(){
         {
             label:'Start Game',
             click(){
-                const gameMenuTemplate = [
-                    {
-                        label:"Quit",
-                        click(){app.quit();}
-                    },
-                    {
-                        label:"Restart",
-                        click(){
-                            mainWindow.reload();
-                        }
-                    },
-                    {
-                        label:"Open Dev Tools",
-                        click(){
-                            mainWindow.toggleDevTools();
-                        }
-                    },
-                    {
-                        label:"Close Dev Tools",
-                        click(){
-                            mainWindow.closeDevTools();
-                        }
-                    }
-                ];
+                if(projectLoaded){
+                    createGameWindow(currentProject);
+                }
 
-                const gameMenu = Menu.buildFromTemplate(gameMenuTemplate);
-
-                const startWindow = new BrowserWindow({
-                    webPreferences: {
-                        preload: path.join(__dirname, 'gameRunner/preload.js')
-                    }
-
-                });
-
-                startWindow.loadURL(url.format({
-                    pathname: path.join(__dirname, 'gameRunner/index.html'),
-                    protocol:'file:',
-                    slashes: true
-                }));
-
-                startWindow.setMenu(gameMenu);
-
+                else{
+                    dialog.showErrorBox('Error', 'No project loaded');
+                }
             }
         },
         {
@@ -156,3 +131,41 @@ app.on('ready', function(){
     Menu.setApplicationMenu(mainMenu);
 });
 
+function createGameWindow(currentProjectObj){
+    const gameWindow = new BrowserWindow({
+        webPreferences: {
+            preload: path.resolve(currentProjectObj.folderPath, 'preload.js')
+        }
+    });
+
+    gameWindow.loadURL(url.format({
+        pathname: path.resolve(currentProjectObj.folderPath, 'index.html'),
+        protocol:'file:',
+        slashes: true
+    }));
+
+    const gameMenuTemplate = [
+        {
+            label:"Quit",
+            click(){gameWindow.close();}
+        },
+        {
+            label:"Restart",
+            click(){
+                gameWindow.reload();
+            },
+            role: 'reload'
+        },
+        {
+            label:"Open Dev Tools",
+            click(){
+                gameWindow.toggleDevTools();
+            }
+        }
+    ];
+
+    const gameMenu = Menu.buildFromTemplate(gameMenuTemplate);
+
+    gameWindow.setMenu(gameMenu);
+    
+}
