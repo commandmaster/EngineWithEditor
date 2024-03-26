@@ -1,0 +1,89 @@
+{
+    "assets":{
+        "assetsPath":"D:/Git/EngineWithEditor/gameRunner/assets/",
+        "animations":{
+            
+        },
+        "stateMachines":{
+           
+        },
+        "textures":[
+          
+        ],
+        "audio":[
+
+        ],
+        "fonts":[
+
+        ],
+        "inputs":[
+            {
+                "inputName":"Jump",
+                "binds":[
+                    {"key":"SPACE", "value":true}
+                ],
+                "type":"keyboard",
+                "actionType":"bool"
+
+            },
+            {
+                "inputName":"MovementX",
+                "binds":[
+                    {"key":"RIGHT_ARROW", "value":1},
+                    {"key":"LEFT_ARROW", "value":-1},
+                    {"key":"D", "value":1},
+                    {"key":"A", "value":-1}
+                ],
+                "type":"keyboard",
+                "actionType":"axis"
+            },
+            {
+                "inputName":"MovementY",
+                "binds":[
+                    {"key":"UP_ARROW", "value":1},
+                    {"key":"DOWN_ARROW", "value":-1},
+                    {"key":"W", "value":1},
+                    {"key":"S", "value":-1}
+                ],
+                "type":"keyboard",
+                "actionType":"axis"
+            }
+
+        ],
+        "scripts":[
+            
+        ],
+        "particleSystems":{
+           
+        }
+    },
+    "scenes":{
+        "level1":{
+            "cameraConfig":{
+                "startingPosition":{
+                    "x":0,
+                    "y":0
+                },
+                "defaultViewAmount":1920,
+                "zoom":1,
+                "willFollow":false,
+                "followSettings":{
+                    
+                }
+            },
+            "gameObjects":{
+          
+            }
+        }
+        
+    },
+    "prefabs":{
+        
+    },
+    "renderSettings":{
+        "backgroundColor":"black",
+        "canvasSizeX":1920,
+        "canvasSizeY":1080,
+        "resizeCanvas":true
+    }
+}

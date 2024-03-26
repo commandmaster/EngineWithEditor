@@ -32,7 +32,23 @@ app.on('ready', function(){
         app.quit();
     })
 
-   
+   async function createNewProject(){
+        const projectDir = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openDirectory']
+        });
+
+        const folderPath = projectDir.filePaths[0];
+        const projectName = path.basename(folderPath);
+
+        fsExtra.copy(path.join(__dirname, '/templates/projectTemplate'), folderPath, (err) => {
+            if (err) throw err;
+        });
+    }
+
+    async function loadProject(pathToFolder){
+        const projectName = path.basename(pathToFolder);
+        const gameDB = Database.loadDB(path.join(pathToFolder, 'gameDB.json'));
+    }
     
     const mainMenuTemplate = [
         {
@@ -40,8 +56,16 @@ app.on('ready', function(){
             submenu:[
                 {
                     label: 'New Project',
-                    click(){
+                    async click(){
+                        const projectDir = await dialog.showOpenDialog(mainWindow, {
+                            properties: ['openDirectory']
+                        });
 
+                        const folderPath = projectDir.filePaths[0];
+
+                        fsExtra.copy(path.join(__dirname, '/templates/projectTemplate'), folderPath, (err) => {
+                            if (err) throw err;
+                        });
                     }
                 },
 
