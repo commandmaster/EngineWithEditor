@@ -65,12 +65,13 @@ app.on('ready', function(){
 
     ipcMain.on('saveProject', (e, projectData) => {
         if (!projectLoaded) return;
-
+        
         projectData = JSON.parse(projectData);
-        const projectDir = projectData.folderPath;
-        const gameConfigPath = path.join(projectDir, 'gameConfig.json');
-        const gameConfigData = JSON.stringify(projectData.gameConfigData);
+        
+        const gameConfigPath = path.join(currentProject.folderPath, 'gameConfig.json');
+        const gameConfigData = JSON.stringify(projectData);
 
+        console.log(gameConfigData);
         fs.writeFile(gameConfigPath, gameConfigData, (err) => {
             if (err) throw err;
         });

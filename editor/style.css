@@ -6,3 +6,23 @@ html, body {
 canvas {
   display: block;
 }
+
+.menuButton{
+  background-color: #292a2d;
+  border: none;
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px;
+  position: absolute;
+  margin: 0px;
+}
+
+.menuButton:hover {
+  background-color: #3e3f42;
+}
+
+.menuButton:active{
+  background-color: #6a6a6d;
+}
