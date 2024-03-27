@@ -6,7 +6,10 @@ let editor = function(p5){
     window.electronAPI.on('projectLoaded', (e, projectData) => {
       const parsedData = JSON.parse(JSON.stringify(projectData));
       const gameData = JSON.parse(parsedData.gameConfigData);
+      const folderPath = JSON.parse(parsedData.folderPath);
+
       p5.storeItem('gameData', gameData);
+      p5.storeItem('folderPath', folderPath);
 
     });
 
@@ -136,9 +139,6 @@ class Inspector extends GuiElement {
     super.Show();
     this.#inspectorFolder = this.datGui.addFolder('Inspector');
 
-    const saveButton = { Save:function(){ console.log("saved") }};
-    this.datGui.add(saveButton,'Save');
-
     this.#inspectorFolder.open();
 
   }
@@ -147,9 +147,8 @@ class Inspector extends GuiElement {
     super.Hide();
 
   }
-
-
 }
+
 
 window.addEventListener("load", () => {
   let editorSketch = new p5(editor);
