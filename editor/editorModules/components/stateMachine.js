@@ -1,5 +1,5 @@
 import ComponentBase from './componentBase.js';
-import { RendererAPI} from '../systems/renderer.js';
+import { RendererAPI} from '../modules/renderer.js';
 
 export default class StateMachine extends ComponentBase{
     constructor(engineAPI, componentConfig, gameObject) {

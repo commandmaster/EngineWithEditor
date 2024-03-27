@@ -1,24 +1,24 @@
 {
     "assets":{
-        "assetsPath":"D:/Git/EngineWithEditor/gameRunner/assets/",
+        "assetsPath":"./assets/",
         "animations":{
             "playerIdle":{
                 "stateMachine":"playerStateMachine",
                 "animationName":"playerIdle",
-                "pathToSpriteSheet":"./assets/animations/animations/playerIdle/playerIdle.png",
-                "pathToAnimationConfig":"./assets/animations/animations/playerIdle/animConfig.json"
+                "pathToSpriteSheet":"animations/animations/playerIdle/playerIdle.png",
+                "pathToAnimationConfig":"animations/animations/playerIdle/animConfig.json"
             }
         },
         "stateMachines":{
             "playerStateMachine":{
                 "stateMachineName":"playerStateMachine",
-                "pathToStateMachineConfig":"./assets/animations/stateMachines/playerStateMachine/stateConfig.json"
+                "pathToStateMachineConfig":"animations/stateMachines/playerStateMachine/stateConfig.json"
             }
         },
         "textures":[
             {
                 "name":"particles-single",
-                "path":"./assets/textures/particles-single.png"
+                "path":"textures/particles-single.png"
             }
         ],
         "audio":[
@@ -67,7 +67,7 @@
         "particleSystems":{
             "testSystem1":{
                 "name":"testSystem1",
-                "pathToParticleSystemConfig":"./assets/particleSystems/testSystem1/config.json"
+                "pathToParticleSystemConfig":"particleSystems/testSystem1/config.json"
             }
         }
     },

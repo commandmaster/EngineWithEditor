@@ -276,7 +276,8 @@ class Engine {
   //#region P5js Callbacks (Preload, Setup, Draw)
   async Preload(){
     const gameConfig = await this.#loadGameConfigAsync();
-
+    this.gameConfig = gameConfig;
+    
     // Setup Objects
     this.prefabs = {};
     this.instantiatedObjects = {};
@@ -336,14 +337,17 @@ class Engine {
   //#region Private Methods
   #loadGameConfigAsync(){
     return new Promise((resolve, reject) => {
-      if (e){
-        console.error(e);
-        reject(e);
+      const gameData = localStorage.getItem('gameData');
+
+      if (gameData === undefined || gameData === null){
+        console.error('gameData not found in localStorage');
+        reject('gameData not found in localStorage');
+        return;
       }
 
-
+      const gameConfig = JSON.parse(gameData);
+      resolve(gameConfig);
       
-  
     });
   }
 
@@ -411,16 +415,19 @@ class Engine {
 
 //#region Create P5js Game Instance
 window.electronAPI.on('projectLoaded', (e, projectData) => {
+  console.log(projectData);
+
   const parsedData = JSON.parse(JSON.stringify(projectData));
   const gameData = JSON.parse(parsedData.gameConfigData);
-  const folderPath = JSON.parse(parsedData.folderPath);
+  const folderPath = parsedData.folderPath;
 
-  p5.storeItem('gameData', gameData);
-  p5.storeItem('folderPath', folderPath);
+  gameData.assets.assetsPath = folderPath + '/assets/';
 
-  resolve(gameData);
-});
-window.addEventListener("load", async () => {
+  localStorage.setItem('gameData', JSON.stringify(gameData));
+  localStorage.setItem('folderPath', folderPath);
+  
   new p5(game);
+ 
 });
+
 //#endregion

@@ -89,11 +89,23 @@ app.on('ready', function(){
         const folderPath = projectDir.filePaths[0];
         const projectName = path.basename(folderPath);
 
-        fsExtra.copy(path.join(__dirname, '/templates/projectTemplate'), folderPath, (err) => {
+        
+
+        fsExtra.copy(path.join(__dirname, '/templates/projectTemplate'), folderPath, async (err) => {
             if (err) throw err;
+
+            // let config = await fs.promises.readFile(path.join(folderPath, 'gameConfig.json'), 'utf8')
+            // config = JSON.parse(config);
+            // config.assets.assetsPath = folderPath + '/assets/';
+            // config = JSON.stringify(config);
+
+            // await fs.promises.writeFile(path.join(folderPath, 'gameConfig.json'), config, 'utf8');
+
 
             loadProject(folderPath);
         });
+
+
 
         
     }

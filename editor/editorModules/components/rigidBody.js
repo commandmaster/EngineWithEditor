@@ -1,4 +1,4 @@
-import { RendererAPI } from "../systems/renderer.js";
+import { RendererAPI } from "../modules/renderer.js";
 import ComponentBase from "./componentBase.js";
 
 export default class Rigidbody extends ComponentBase {
