@@ -67,7 +67,6 @@ export default class Rigidbody extends ComponentBase {
                 task = new RendererAPI.BoxColliderRenderTask(this.engineAPI, {x, y, width: collider.colliderConfig.width, height: collider.colliderConfig.height, rotation: rot});
             }
 
-            console.log(task)
             this.engineAPI.engine.renderer.addRenderTask(task);
         }
     }

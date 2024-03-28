@@ -2,7 +2,7 @@ import Transform from "./components/transform.js";
 import Rigidbody from "./components/rigidBody.js";
 import StateMachine from "./components/stateMachine.js";
 import ParticleComponent from "./components/particleComponent.js";
-
+import EditorComponent from "./components/editorComponent.js";
 
 
 export class GameObjectInstance {
@@ -34,6 +34,8 @@ export class GameObjectInstance {
 
     #initializeComponents(){
         this.components = {};
+        this.components["EditorComponent"] = new EditorComponent(this.engineAPI, this);
+
         for (const componentName in this.gameObjectConfig.components) {
             const componentConfig = this.gameObjectConfig.components[componentName];
             if (componentConfig === undefined || componentConfig === null){
@@ -160,5 +162,10 @@ export class Camera{
         this.p5.translate(cameraX, cameraY);
         this.p5.scale(this.scaleFactor);
 
+    }
+
+    ScreenToWorld(screenPos){
+        const worldPos = {x: (screenPos.x - this.p5.width / 2) / this.scaleFactor + this.position.x, y: (screenPos.y - this.p5.height / 2) / this.scaleFactor + this.position.y};
+        return worldPos;
     }
 }
