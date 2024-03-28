@@ -48,7 +48,7 @@ export default class EditorComponent extends ComponentBase{
         if (this.isDragging){
             const pos = this.engineAPI.engine.renderer.camera.ScreenToWorld({x: this.p5.mouseX, y: this.p5.mouseY});
 
-            this.gameObject.components.Transform.WorldToLocalPos(pos);
+            this.gameObject.components.Transform.localPosition = pos;
 
             
         }

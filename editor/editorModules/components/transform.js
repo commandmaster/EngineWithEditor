@@ -105,30 +105,6 @@ export default class Transform extends ComponentBase {
     }
     //#endregion
 
-    WorldToLocalPos(worldPos){
-        if (this.parentTransform === null) {
-            this.localPosition = worldPos;
-            return worldPos;
-        }
-        
-
-        const parentPosition = this.parentTransform.worldPosition;
-        const parentRotation = this.parentTransform.worldRotation;
-        const degToRad = Math.PI / 180;
-
-        const x1 = worldPos.x - parentPosition.x;
-        const y1 = worldPos.y - parentPosition.y;
-
-        const rotatedX = x1 * Math.cos(-parentRotation * degToRad) - y1 * Math.sin(-parentRotation * degToRad) + parentPosition.x;
-        const rotatedY = x1 * Math.sin(-parentRotation * degToRad) + y1 * Math.cos(-parentRotation * degToRad) + parentPosition.y;
-
-        this.localPosition = {x: rotatedX, y: rotatedY};
-
-
-        
-        return {x: rotatedX, y: rotatedY};
-    }
-
     //#region Getters and Setters
     get worldPosition() {
         return this.worldPosition;
