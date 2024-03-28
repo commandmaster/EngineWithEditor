@@ -1,56 +1,4 @@
 
-let editor = function(p5){
-  let editorEngine = new EditorEngine(p5);
-
-  p5.setup = function(){
-    window.electronAPI.on('projectLoaded', (e, projectData) => {
-      const parsedData = JSON.parse(JSON.stringify(projectData));
-      const gameData = JSON.parse(parsedData.gameConfigData);
-      const folderPath = JSON.parse(parsedData.folderPath);
-
-      p5.storeItem('gameData', gameData);
-      p5.storeItem('folderPath', folderPath);
-
-    });
-
-    editorEngine.Start();
-  };
-
-  p5.draw = function(){
-    editorEngine.Update(p5.deltaTime);
-  };
-}
-
-class EditorEngine {
-  constructor(p5){
-    this.p5 = p5;
-    
-    
-  }
-
-  Start(){
-    this.p5.createCanvas(800, 600);
-    this.Inspector = new Inspector(this.p5);
-    this.Inspector.Show();
-    
-    this.MenuBar = new MenuBar(this.p5);
-    this.MenuBar.SaveButton.Onclick(() => {
-      this.SaveProject();
-    });
-  }
-
-  Update(deltaTime){
-    this.p5.background(0);
-  }
-
-  SaveProject(){
-    if (this.p5.getItem('gameData') === undefined || this.p5.getItem('gameData') === null) return;
-    const gameData = this.p5.getItem('gameData');
-    window.electronAPI.send('saveProject', JSON.stringify(gameData));
-  }
-}
-
-
 
 class MenuBar {
   #saveButton;
@@ -205,10 +153,7 @@ class Inspector extends GuiElement {
 
 //#region Imports
 import Renderer from './editorModules/modules/renderer.js';
-import InputSystem from './editorModules/modules/inputSystem.js';
-import PhysicsSystem from './editorModules/modules/physicsSystem.js';
-import ScriptingSystem from './editorModules/modules/scriptingSystem.js';
-import AudioSystem from './editorModules/modules/audioSystem.js';
+
 import ParticleSystem from './editorModules/modules/particleSystem.js';
 
 import {GameObjectInstance, Camera}  from './editorModules/engineObjects.js';
@@ -277,7 +222,7 @@ class Engine {
   async Preload(){
     const gameConfig = await this.#loadGameConfigAsync();
     this.gameConfig = gameConfig;
-    
+
     // Setup Objects
     this.prefabs = {};
     this.instantiatedObjects = {};
@@ -286,18 +231,11 @@ class Engine {
     this.engineAPI = new EngineAPI(this);
 
     this.renderer = new Renderer(this.engineAPI, gameConfig);
-    this.inputSystem = new InputSystem(this.engineAPI, gameConfig);
-    this.physicsSystem = new PhysicsSystem(this.engineAPI, gameConfig);
-    this.scriptingSystem = new ScriptingSystem(this.engineAPI, gameConfig);
-    this.audioSystem = new AudioSystem(this.engineAPI, gameConfig);
+
     this.particleSystem = new ParticleSystem(this.engineAPI, gameConfig);
 
     return Promise.all([
-      this.inputSystem.Preload(),
-      this.physicsSystem.Preload(),
-      this.audioSystem.Preload(),
       this.particleSystem.Preload(),
-      this.scriptingSystem.Preload(),
       this.renderer.Preload(),
       this.#loadGameConfigAsync()
     ]);
@@ -305,28 +243,20 @@ class Engine {
 
   Start(){
     // Load Engine Modules
-    this.inputSystem.Start();
-    this.physicsSystem.Start();
+
     this.particleSystem.Start();
-    this.scriptingSystem.Start();
     this.renderer.Start();
-    this.audioSystem.Start();
 
     this.#loadScene("level1");
   }
 
   
 
-  Update(dt){
-    this.inputSystem.Update(dt);
-    this.physicsSystem.Update(dt);
-    
+  Update(dt){   
     for (const objName in this.instantiatedObjects){
       this.instantiatedObjects[objName].Update(dt);
     }
 
-    this.scriptingSystem.Update(dt);
-    this.audioSystem.Update(dt);
     this.particleSystem.Update(dt);
     this.renderer.Update(dt);
   }
@@ -359,6 +289,8 @@ class Engine {
   }
 
   async #loadScene(sceneName){
+    this.currentSceneName = sceneName;
+
     const scene = this.gameConfig.scenes[sceneName];
     const cameraConfig = this.gameConfig.scenes[sceneName].cameraConfig;
     const cameraInstance = new Camera(this.engineAPI, cameraConfig);

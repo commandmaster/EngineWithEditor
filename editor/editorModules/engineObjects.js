@@ -1,6 +1,5 @@
 import Transform from "./components/transform.js";
 import Rigidbody from "./components/rigidBody.js";
-import Script from "./components/scriptComponent.js";
 import StateMachine from "./components/stateMachine.js";
 import ParticleComponent from "./components/particleComponent.js";
 
@@ -62,10 +61,6 @@ export class GameObjectInstance {
             this.components[componentName] = new StateMachine(this.engineAPI, componentConfig, this);
         }
 
-        if (componentName === "ScriptingComponent"){
-            this.components[componentName] = new Script(this.engineAPI, componentConfig, this);
-        }
-
         if (componentName === "ParticleSystem"){
             this.components[componentName] = new ParticleComponent(this.engineAPI, componentConfig, this);
         }
@@ -93,6 +88,7 @@ export class Camera{
         this.gameEngine = engineAPI.gameEngine;
         this.p5 = engineAPI.gameEngine.p5;
 
+
     }
 
     Start(){
@@ -104,6 +100,40 @@ export class Camera{
         else {
             this.position = this.cameraConfig.startingPosition;
         }
+
+        this.zoom = this.cameraConfig.zoom;
+
+        window.addEventListener("wheel", (event) => {
+            const zoomAmount = 0.14;
+            if (event.deltaY > 0){
+                this.zoom -= zoomAmount;
+            }
+
+            else{
+                this.zoom += zoomAmount;
+            }
+
+            const maxZoom = 4;
+            const minZoom = 0.1;
+            this.zoom = this.p5.constrain(this.zoom, minZoom, maxZoom);
+        });
+
+        this.mouseDown = false;
+        window.addEventListener("mousedown", (event) => {
+            if (event.button === 2){
+                this.mouseDown = true;
+                this.p5.requestPointerLock();
+            }
+            
+        });
+
+        window.addEventListener("mouseup", (event) => {
+            if (event.button === 2){
+                this.mouseDown = false;
+                this.p5.exitPointerLock()
+            }
+            
+        });
     }
 
     Update(){
@@ -112,15 +142,14 @@ export class Camera{
         // Transformation Matrix is saved in the renderer update method
         // That is why we don't need to push() or pop() here
 
-        if (this.cameraConfig.willFollow){
-            if (this.gameEngine.instantiatedObjects[this.cameraConfig.followSettings.objectToFollow] !== undefined){
-                this.position = this.gameEngine.instantiatedObjects[this.cameraConfig.followSettings.objectToFollow].components["Transform"].worldPosition;
-            } 
-            
+        if (this.mouseDown){
+            const sensitivity = 1.7;
+            this.position.x += -this.p5.movedX * sensitivity * 1/this.zoom;
+            this.position.y += -this.p5.movedY * sensitivity * 1/this.zoom;
         }
 
         this.aspectRatio = this.p5.width / this.p5.height;
-        this.scaleFactor = this.p5.width / this.cameraConfig.defaultViewAmount * this.cameraConfig.zoom;
+        this.scaleFactor = this.p5.width / this.cameraConfig.defaultViewAmount * this.zoom;
         const screenWidth = this.p5.width
         const screenHeight = this.p5.height;
 

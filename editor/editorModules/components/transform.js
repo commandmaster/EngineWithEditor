@@ -1,4 +1,5 @@
 import ComponentBase from "./componentBase.js";
+import { RendererAPI } from "../modules/renderer.js";
 
 export default class Transform extends ComponentBase {
    
@@ -33,6 +34,8 @@ export default class Transform extends ComponentBase {
 
     Update() {
         this.#setWorldTransform();
+        this.#renderDebug();
+        this.#updateStoredConfig();
     }
     //#endregion
 
@@ -45,6 +48,8 @@ export default class Transform extends ComponentBase {
         }
 
         else if (this.gameObject.parent !== undefined && this.gameObject.parent !== null) {
+            this.parentTransform = ScriptingAPI.getComponentByName(this.engineAPI, this.gameObject.parent, "Transform");
+
             const parentPosition = this.parentTransform.worldPosition;
             const parentRotation = this.parentTransform.worldRotation;
             const degToRad = Math.PI / 180;
@@ -62,11 +67,51 @@ export default class Transform extends ComponentBase {
         }
 
         else{
-            console.error("Parent transform not found for game object: " + this.gameObject.name + ". Defaulting to world as the parent.");
+            const name = this.gameObject.gameObjectConfig.name;
+            console.error("Parent transform not found for game object: " + name + ". Defaulting to world as the parent.");
             this.worldPosition = this.localPosition;
             this.worldRotation = this.localRotation;
             this.worldScale = this.localScale;
         }
+    }
+
+    #updateStoredConfig(){
+        const storedConfig = JSON.parse(localStorage.getItem('gameData'));
+        const name = this.gameObject.gameObjectConfig.name;
+
+
+        let transform = storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents["Transform"];
+
+        
+            
+        
+
+        if (transform === undefined || transform === undefined) {
+            transform = {}
+        }
+
+        transform.position = this.localPosition;
+        transform.rotation = this.localRotation;
+        transform.scale = this.localScale;
+        storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents["Transform"] = transform;
+        
+
+        
+
+        localStorage.setItem('gameData', JSON.stringify(storedConfig));
+    }
+
+    #renderDebug(){
+        const task = new RendererAPI.CustomRenderTask(this.engineAPI, (p5) => {
+            const img = this.engineAPI.engine.renderer.editorTextures["movingArrow2"];
+            p5.scale(0.05);
+            p5.rotate(-180)
+            p5.tint(255, 0, 0, 1000);
+            p5.image(img, this.worldPosition.x, this.worldPosition.y);
+        });
+
+        this.engineAPI.engine.renderer.addRenderTask(task);
+
     }
     //#endregion
 

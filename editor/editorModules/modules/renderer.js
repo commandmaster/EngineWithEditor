@@ -84,6 +84,26 @@ class RendererLoaders{
         });
     }
 
+    async preloadEditorTextures(){
+        return new Promise(async (resolve, reject) => {
+            try {
+                const textures = {};
+                
+                const mappings = await this.#loadJSONAsync("./editorAssets/textureMappings.json");
+                for (const texture of mappings.texturesToLoad){
+                    const img = await this.#loadImageAsync("./editorAssets/textures/" + texture.path);
+                    textures[texture.name] = img;
+                }
+
+                resolve(textures);
+            } catch (err) {
+                reject(err);
+            }
+
+        });
+    }
+
+
     //#region Private Methods
     #loadImageAsync(path){
         return new Promise((resolve, reject) => {
@@ -254,6 +274,7 @@ export default class Renderer extends ModuleBase{
                 this.animationConfigs = await this.rendererLoaders.preloadAnimConfigs(this.gameConfig);
                 this.animationsSheets = await this.rendererLoaders.preloadAnimSheets(this.gameConfig);
                 this.textures = await this.rendererLoaders.preloadTextures(this.gameConfig);
+                this.editorTextures = await this.rendererLoaders.preloadEditorTextures();
 
                 this.renderQueue = []; // This will be used to store all the objects that need to be rendered this frame and will be reset every frame
 
