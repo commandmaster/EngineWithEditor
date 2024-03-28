@@ -105,6 +105,12 @@ export default class Transform extends ComponentBase {
     }
     //#endregion
 
+    //#region Public Methods
+    SetLocalFromWorld(){
+        
+    }
+    //#endregion
+
     //#region Getters and Setters
     get worldPosition() {
         return this.worldPosition;
