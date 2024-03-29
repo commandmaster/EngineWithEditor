@@ -1,13 +1,83 @@
 import ComponentBase from "./componentBase.js";
 import { RendererAPI } from "../modules/renderer.js";
 
+
+
+class GuiElement {
+    constructor(p5){
+      this.p5 = p5;
+      this.datGui = new dat.GUI();
+      this.Hide();
+    }
+  
+    Show(){
+      this.datGui.show();
+    }
+  
+    Hide(){
+      this.datGui.hide();
+    }  
+  }
+  
+  class Inspector extends GuiElement {
+    #inspectorFolder;
+  
+    constructor(p5, editorComponent){
+      super(p5);
+        this.editorComponent = editorComponent;
+        this.#inspectorFolder = this.datGui.addFolder('Inspector');
+    }
+  
+    Show(){
+      super.Show();
+      
+  
+      this.#inspectorFolder.open();
+  
+    }
+  
+    Hide(){
+      super.Hide();
+    }
+
+    addComponent(componentName, componentConfig){
+        const folder = this.#inspectorFolder.addFolder(componentName);
+        this.#addFolderRecursive(folder, componentConfig);
+    }
+
+    #addFolderRecursive(parentFolder, object){
+        for (const key in object){
+            if (typeof object[key] === "object"){
+                console.log(key);
+                const folder = parentFolder.addFolder(key);
+                this.#addFolderRecursive(folder, object[key]);
+            }
+
+            else{
+                parentFolder.add(object, key);
+            }
+        }
+    
+    }
+  }
+  
+  
+  
+
+  
+
 export default class EditorComponent extends ComponentBase{
-    constructor(editorAPI, gameObject) {
-        super(editorAPI, null, gameObject);
+    constructor(engineAPI, gameObject) {
+        super(engineAPI, null, gameObject);
 
     }
 
     Start(){
+        this.engine.editorSystem.AddEditorObject(this);
+        this.inspector = new Inspector(this.p5, this);
+        this.inspector.Hide();
+        this.inspector.addComponent("Transform", this.gameObject.components.Transform.componentConfig);
+
         this.showEditor = false;
         this.isDragging = false;
         this.mode = "translate";
@@ -24,6 +94,7 @@ export default class EditorComponent extends ComponentBase{
                 }
 
                 if (isWithRadius(pos, clickedPos, clickedOnRadius)){
+                    this.engineAPI.engine.editorSystem.HighlightObject(this);
                     this.showEditor = true;
                     this.isDragging = true;
                     this.mode = "translate";
@@ -54,7 +125,10 @@ export default class EditorComponent extends ComponentBase{
     }
 
     Update(){
-        if (!this.showEditor) return;
+        if (!this.showEditor) {   
+            return;
+        }
+
 
         if (this.mode === "translate"){
             this.#translateDebugRender();

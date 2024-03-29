@@ -109,8 +109,6 @@ class ParticleEmitterInstance{
     //#endregion
 
 
-
-
     constructor(engineAPI, emitterConfig, systemInstance){
         this.engineAPI = engineAPI;
         this.p5 = engineAPI.p5;

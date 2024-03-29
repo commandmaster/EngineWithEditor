@@ -1,62 +1,5 @@
 
 
-class MenuBar {
-  #saveButton;
-  #createSceneButton;
-  #prefabEditorButton;
-  #createParticleSystem
-
-
-  constructor(p5){
-    this.p5 = p5;
-    this.#saveButton = new MenuButton(this.p5, 'Save', 0, 0);
-    this.#createSceneButton = new MenuButton(this.p5, 'Create Scene', this.#saveButton.positionX + this.#saveButton.sizeX, 0);
-    this.#prefabEditorButton = new MenuButton(this.p5, 'Prefab Editor', this.#createSceneButton.positionX + this.#createSceneButton.sizeX, 0);
-    this.#createParticleSystem = new MenuButton(this.p5, 'Create Particle System', this.#prefabEditorButton.positionX + this.#prefabEditorButton.sizeX, 0);
-  }
-
-  get SaveButton(){
-    return this.#saveButton;
-  }
-
-  get CreateSceneButton(){
-    return this.#createSceneButton;
-  }
-
-  get PrefabEditorButton(){
-    return this.#prefabEditorButton;
-  }
-
-  get CreateParticleSystem(){
-    return this.#createParticleSystem;
-  }
-}
-
-class MenuButton {
-  constructor(p5, text, positionX, positionY){
-    this.p5 = p5;
-    this.text = text;
-
-    this.positionX = positionX;
-    this.positionY = positionY;
-
-    this.button = this.p5.createButton(this.text);
-
-
-
-    this.button.style('width', 'fit-content');
-    this.button.position(this.positionX, this.positionY);
-    this.button.class('menuButton');
-
-    this.sizeX = this.button.size().width;
-    this.sizeY = this.button.size().height;
-  }
-
-  Onclick(callback){
-    this.button.mousePressed(callback);
-    console.log("button pressed");
-  }
-}
 
 
 class GuiElement {
@@ -98,9 +41,6 @@ class Inspector extends GuiElement {
 }
 
 
-// window.addEventListener("load", () => {
-//   let editorSketch = new p5(editor);
-// });
 
 
 
@@ -111,52 +51,15 @@ class Inspector extends GuiElement {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 
-// Bennett Friesen
-// 
-//
-// Extra for Experts:
 
 
 
 //#region Imports
 import Renderer from './editorModules/modules/renderer.js';
-
 import ParticleSystem from './editorModules/modules/particleSystem.js';
-
+import EditorSystem from './editorModules/modules/editorSystem.js';
 import {GameObjectInstance, Camera}  from './editorModules/engineObjects.js';
+
 //#endregion
 
 
@@ -229,14 +132,14 @@ class Engine {
     this.#loadPrefabs(gameConfig); // gameConfig is loaded in loadGameConfigAsync
 
     this.engineAPI = new EngineAPI(this);
-
     this.renderer = new Renderer(this.engineAPI, gameConfig);
-
     this.particleSystem = new ParticleSystem(this.engineAPI, gameConfig);
+    this.editorSystem = new EditorSystem(this.engineAPI, gameConfig);
 
     return Promise.all([
       this.particleSystem.Preload(),
       this.renderer.Preload(),
+      this.editorSystem.Preload(),
       this.#loadGameConfigAsync()
     ]);
   }
@@ -246,6 +149,7 @@ class Engine {
 
     this.particleSystem.Start();
     this.renderer.Start();
+    this.editorSystem.Start();
 
     this.#loadScene("level1");
   }
@@ -259,6 +163,7 @@ class Engine {
 
     this.particleSystem.Update(dt);
     this.renderer.Update(dt);
+    this.editorSystem.Update(dt);
   }
 
   //#endregion

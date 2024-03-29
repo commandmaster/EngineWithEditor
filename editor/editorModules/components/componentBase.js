@@ -5,6 +5,7 @@ export default class ComponentBase{
 
         this.gameEngine = engineAPI.gameEngine;
         this.p5 = engineAPI.gameEngine.p5;
+        this.engine = engineAPI.engine;
 
         this.gameObject = gameObject;
     }

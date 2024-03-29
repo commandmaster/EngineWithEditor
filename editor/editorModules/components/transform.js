@@ -80,12 +80,7 @@ export default class Transform extends ComponentBase {
         const storedConfig = JSON.parse(localStorage.getItem('gameData'));
         const name = this.gameObject.gameObjectConfig.name;
 
-
         let transform = storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents["Transform"];
-
-        
-            
-        
 
         if (transform === undefined || transform === undefined) {
             transform = {}
@@ -95,8 +90,6 @@ export default class Transform extends ComponentBase {
         transform.rotation = this.localRotation;
         transform.scale = this.localScale;
         storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents["Transform"] = transform;
-        
-
         
 
         localStorage.setItem('gameData', JSON.stringify(storedConfig));
