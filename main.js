@@ -63,19 +63,6 @@ app.on('ready', function(){
         edtiorLoaded = true;
     });
 
-    ipcMain.on('saveProject', (e, projectData) => {
-        if (!projectLoaded) return;
-        
-        projectData = JSON.parse(projectData);
-        
-        const gameConfigPath = path.join(currentProject.folderPath, 'gameConfig.json');
-        const gameConfigData = JSON.stringify(projectData);
-
-        console.log(gameConfigData);
-        fs.writeFile(gameConfigPath, gameConfigData, (err) => {
-            if (err) throw err;
-        });
-    });
 
     mainWindow.on('closed', () => {
         app.quit();
@@ -127,6 +114,13 @@ app.on('ready', function(){
     
     const mainMenuTemplate = [
         {
+            label:'Save',
+            async click(){
+                await saveProject();
+            },
+            accelerator: 'Ctrl+S'
+        },
+        {
             label:'File',
             submenu:[
                 {
@@ -153,9 +147,11 @@ app.on('ready', function(){
         },
         {
             label:'Start Game',
-            click(){
+            async click(){
                 if(projectLoaded){
-                    createGameWindow(currentProject);
+                    saveProject().then(() => {
+                        createGameWindow(currentProject);
+                    });
                 }
 
                 else{
@@ -224,4 +220,26 @@ function createGameWindow(currentProjectObj){
 
     gameWindow.setMenu(gameMenu);
     
+}
+
+function requestGameData(mainWindow){
+    return new Promise((resolve, reject) => {
+        mainWindow.webContents.send('getGameData');
+        ipcMain.on('gameData', (e, gameData) => {
+            resolve(gameData);
+        });
+    });
+}
+
+async function saveProject(){
+    if (!projectLoaded) {
+        dialog.showErrorBox('Error', 'No project loaded');
+        return;
+    }
+    
+    const gameData = await requestGameData(mainWindow);
+    const parsedData = JSON.parse(gameData);
+
+    await fs.promises.writeFile(currentProject.gameConfigPath, JSON.stringify(parsedData), 'utf8');
+    currentProject.gameConfigData = JSON.stringify(parsedData);
 }

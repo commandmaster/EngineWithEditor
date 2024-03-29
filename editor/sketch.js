@@ -359,6 +359,11 @@ window.electronAPI.on('projectLoaded', (e, projectData) => {
   localStorage.setItem('folderPath', folderPath);
   
   new p5(game);
+
+
+  window.electronAPI.on('getGameData', (e) => {
+    window.electronAPI.send('gameData', localStorage.getItem('gameData'));
+  });
  
 });
 

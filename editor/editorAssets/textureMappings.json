@@ -7,6 +7,10 @@
         {
             "path":"movingArrow2.png",
             "name":"movingArrow2"
+        },
+        {
+            "path":"rotationArrow2.png",
+            "name":"rotationArrow"
         }
     ]
 }

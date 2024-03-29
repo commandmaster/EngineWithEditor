@@ -40,8 +40,6 @@ export default class Transform extends ComponentBase {
 
     //#region Private Methods
     #setWorldTransform(){
-       
-
         if (this.gameObject.parent === "world") {
             this.worldPosition = this.localPosition;
             this.worldRotation = this.localRotation;
@@ -106,8 +104,39 @@ export default class Transform extends ComponentBase {
     //#endregion
 
     //#region Public Methods
-    SetLocalFromWorld(){
-        
+    SetLocalFromWorld(worldPosition){
+        if (this.gameObject.parent === "world") {
+            this.localPosition = worldPosition;
+            return;
+        }
+
+
+        this.parentTransform = ScriptingAPI.getComponentByName(this.engineAPI, this.gameObject.parent, "Transform");
+        const parentPosition = this.parentTransform.worldPosition;
+        const parentRotation = this.parentTransform.worldRotation;
+
+        const degToRad = Math.PI / 180;
+        const theta = parentRotation * degToRad;
+
+        const x1 = worldPosition.x - parentPosition.x;
+        const y1 = worldPosition.y - parentPosition.y;
+
+        const rotatedX = x1 * Math.cos(theta) + y1 * Math.sin(theta);
+        const rotatedY = -x1 * Math.sin(theta) + y1 * Math.cos(theta);
+
+        this.localPosition = {x: rotatedX, y: rotatedY};
+        this.#setWorldTransform(); // update world transform based on new local position
+    }
+
+    SetLocalRotFromWorld(worldRotation){
+        if (this.gameObject.parent === "world") {
+            this.localRotation = worldRotation;
+            return;
+        }
+
+        this.parentTransform = ScriptingAPI.getComponentByName(this.engineAPI, this.gameObject.parent, "Transform");
+        this.localRotation = worldRotation - this.parentTransform.worldRotation;
+        this.#setWorldTransform(); // update world transform based on new local rotation
     }
     //#endregion
 

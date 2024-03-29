@@ -10,6 +10,7 @@ export default class EditorComponent extends ComponentBase{
     Start(){
         this.showEditor = false;
         this.isDragging = false;
+        this.mode = "translate";
 
         window.addEventListener("mousedown", (e) => {
             if (e.button === 0){
@@ -25,6 +26,7 @@ export default class EditorComponent extends ComponentBase{
                 if (isWithRadius(pos, clickedPos, clickedOnRadius)){
                     this.showEditor = true;
                     this.isDragging = true;
+                    this.mode = "translate";
                 }
 
                 else{
@@ -39,22 +41,45 @@ export default class EditorComponent extends ComponentBase{
             }
         }); 
 
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "t" || e.key === "w"){
+                this.mode = "translate";
+            }
+
+            if (e.key === "r"){
+                this.mode = "rotate";
+            }
+        });
+
     }
 
     Update(){
         if (!this.showEditor) return;
-        this.#debugRender();
 
-        if (this.isDragging){
-            const pos = this.engineAPI.engine.renderer.camera.ScreenToWorld({x: this.p5.mouseX, y: this.p5.mouseY});
+        if (this.mode === "translate"){
+            this.#translateDebugRender();
 
-            this.gameObject.components.Transform.localPosition = pos;
+            if (this.isDragging){
+                const pos = this.engineAPI.engine.renderer.camera.ScreenToWorld({x: this.p5.mouseX, y: this.p5.mouseY});
 
-            
+                //this.gameObject.components.Transform.localPosition = pos;
+                this.gameObject.components.Transform.SetLocalFromWorld(pos);
+                
+            }
+        }
+
+        if (this.mode === "rotate"){
+            const dir = this.engineAPI.engine.renderer.camera.ScreenToWorld({x: this.p5.mouseX, y: this.p5.mouseY});
+            const pos = this.gameObject.components.Transform.worldPosition;
+
+            const angle = Math.atan2(dir.y - pos.y, dir.x - pos.x);
+
+            this.gameObject.components.Transform.SetLocalRotFromWorld(angle * 180 / Math.PI)
+            this.#rotateDebugRender();
         }
     }
 
-    #debugRender(){
+    #translateDebugRender(){
         const pos = this.gameObject.components.Transform.worldPosition;
         const task = new RendererAPI.CustomRenderTask(this.engineAPI, (p5) => {
             const img = this.engineAPI.engine.renderer.editorTextures["movingArrow2"];
@@ -75,6 +100,29 @@ export default class EditorComponent extends ComponentBase{
                 p5.pop();
             }
  
+        });
+
+        this.engineAPI.engine.renderer.addRenderTask(task);
+    }
+
+    #rotateDebugRender(){
+        const pos = this.gameObject.components.Transform.worldPosition;
+        const task = new RendererAPI.CustomRenderTask(this.engineAPI, (p5) => {
+            const img = this.engineAPI.engine.renderer.editorTextures["rotationArrow"];
+            const arrowOffsetsX = 150
+            const rot = this.gameObject.components.Transform.worldRotation;
+
+            p5.push();
+            p5.translate(pos.x, pos.y);
+            p5.rotate(rot)
+            p5.translate(arrowOffsetsX, 0)
+            p5.scale(0.2);
+            
+            
+            
+            p5.tint(0, 0, 255, 10000);
+            p5.image(img, 0, 0);
+            p5.pop();
         });
 
         this.engineAPI.engine.renderer.addRenderTask(task);
