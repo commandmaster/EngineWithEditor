@@ -15,11 +15,13 @@ export default class Rigidbody extends ComponentBase {
 
     //#region Physics System Callbacks
     Start(){
-        this.colliderConfigs = this.componentConfig.colliders;
+        this.updateFromNewConfig(this.componentConfig);
+    }
+
+    updateFromNewConfig(newConfig){
+        this.colliderConfigs = newConfig.colliders;
 
         this.colliders = [];
-
-    
 
         const addColliderBodyToBody = (collider) => {
 
@@ -37,8 +39,6 @@ export default class Rigidbody extends ComponentBase {
         this.colliderConfigs.forEach(config => {
             addColliderBodyToBody(config);
         });
-
-   
     }
 
     Update(shouldDebug=true){

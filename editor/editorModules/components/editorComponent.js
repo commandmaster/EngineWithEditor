@@ -25,7 +25,11 @@ class GuiElement {
     constructor(p5, editorComponent){
       super(p5);
         this.editorComponent = editorComponent;
+        this.engineAPI = editorComponent.engineAPI;
         this.#inspectorFolder = this.datGui.addFolder('Inspector');
+
+        this.components = {};
+        this.folders = {};
     }
   
     Show(){
@@ -40,16 +44,37 @@ class GuiElement {
       super.Hide();
     }
 
+    SaveConfigsToGameData(){
+        for (const component in this.components){
+            const storedConfig = JSON.parse(localStorage.getItem('gameData'));
+            const name = this.editorComponent.gameObject.gameObjectConfig.name;
+
+            const componentConfig = this.components[component];
+
+            storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents[component] = componentConfig;
+            localStorage.setItem('gameData', JSON.stringify(storedConfig));
+        }
+
+        for (const folder in this.folders){
+            if (folder === "Rigidbody"){
+                this.editorComponent.gameObject.components.Rigidbody.updateFromNewConfig(this.components[folder]);
+            }
+        }
+    }
+
     addComponent(componentName, componentConfig){
+        this.components[componentName] = JSON.parse(JSON.stringify(componentConfig));
         const folder = this.#inspectorFolder.addFolder(componentName);
-        this.#addFolderRecursive(folder, componentConfig);
+
+        this.folders[componentName] = folder;
+        this.#addFolderRecursive(folder, this.components[componentName]);
     }
 
     #addFolderRecursive(parentFolder, object){
         for (const key in object){
             if (typeof object[key] === "object"){
-                console.log(key);
                 const folder = parentFolder.addFolder(key);
+
                 this.#addFolderRecursive(folder, object[key]);
             }
 
@@ -57,7 +82,6 @@ class GuiElement {
                 parentFolder.add(object, key);
             }
         }
-    
     }
   }
   
@@ -76,7 +100,13 @@ export default class EditorComponent extends ComponentBase{
         this.engine.editorSystem.AddEditorObject(this);
         this.inspector = new Inspector(this.p5, this);
         this.inspector.Hide();
-        this.inspector.addComponent("Transform", this.gameObject.components.Transform.componentConfig);
+
+        for (const component in this.gameObject.components){
+            if (component !== "EditorComponent"){
+                this.inspector.addComponent(component, this.gameObject.components[component].componentConfig);
+            }
+        }
+        
 
         this.showEditor = false;
         this.isDragging = false;
@@ -125,10 +155,8 @@ export default class EditorComponent extends ComponentBase{
     }
 
     Update(){
-        if (!this.showEditor) {   
-            return;
-        }
-
+        this.inspector.SaveConfigsToGameData();
+        if (!this.showEditor) return;        
 
         if (this.mode === "translate"){
             this.#translateDebugRender();

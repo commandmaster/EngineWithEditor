@@ -30,6 +30,7 @@ export default class EditorSystem extends ModuleBase{
     HighlightObject(obj){
         this.highlightedObject = obj;
         this.highlightedObject.inspector.Show();
+        
         for (const obj of this.editorComponents){
             if (obj !== this.highlightedObject){
                 obj.showEditor = false;
