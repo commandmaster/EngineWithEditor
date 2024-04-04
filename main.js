@@ -6,6 +6,7 @@ const fsExtra = require('fs-extra');
 const { exec } = require('child_process');
 const { rimraf } = require('rimraf');
 const prompt = require('electron-prompt');
+const ejs = require('ejs');
 const Database = require('@bennettf/simpledb'); // My custom js json manipulation npm package
 
 const {dialog, app, BrowserWindow, Menu, shell, ipcMain,  nativeTheme, BrowserView} = electron;
@@ -160,6 +161,17 @@ app.on('ready', function(){
             }
         },
         {
+            label:'Scripting',
+            submenu:[
+                {
+                    label: 'Create Script',
+                    click(){
+                        createScript();
+                    }
+                }
+            ]
+        },
+        {
             label:'Dev Tools',
             submenu:[
                 {
@@ -242,4 +254,29 @@ async function saveProject(){
 
     await fs.promises.writeFile(currentProject.gameConfigPath, JSON.stringify(parsedData), 'utf8');
     currentProject.gameConfigData = JSON.stringify(parsedData);
+}
+
+async function createScript(){
+    if (!projectLoaded){
+        dialog.showErrorBox('Error', 'No project loaded');
+        return;
+    }
+
+    let scriptName = await prompt({
+        title:'Script Name',
+        label:'Enter a name for the js script.',
+        value:'exampleScript'
+    });
+
+    scriptName = scriptName.trim()
+    scriptName = scriptName[0].toUpperCase() + scriptName.slice(1);
+
+
+    const destinationPath = path.join(currentProject.folderPath, 'assets', 'scripts')
+    const sourceTemplatePath = path.join(__dirname, 'templates', 'scriptTemplate.ejs')  
+    const templateContent = await fs.promises.readFile(sourceTemplatePath)
+
+    const scriptPath = path.join(destinationPath, scriptName + '.js');
+    const renderedTemplate = ejs.render(templateContent.toString(), {className: scriptName});
+    fs.promises.writeFile(scriptPath, renderedTemplate, 'utf8');
 }

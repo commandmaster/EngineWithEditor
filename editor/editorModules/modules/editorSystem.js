@@ -19,7 +19,15 @@ export default class EditorSystem extends ModuleBase{
     }
 
     Update(dt) {
-        return;
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape'){
+                if (this.highlightedObject){
+                    this.highlightedObject.inspector.Hide();
+                    this.highlightedObject = null;
+                }
+            }
+        });
+            
     }
 
     //#region 

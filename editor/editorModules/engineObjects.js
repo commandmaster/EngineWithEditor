@@ -105,8 +105,8 @@ export class Camera{
 
         this.zoom = this.cameraConfig.zoom;
 
+        let zoomAmount = 0.14;
         window.addEventListener("wheel", (event) => {
-            const zoomAmount = 0.14;
             if (event.deltaY > 0){
                 this.zoom -= zoomAmount;
             }
@@ -119,6 +119,39 @@ export class Camera{
             const minZoom = 0.1;
             this.zoom = this.p5.constrain(this.zoom, minZoom, maxZoom);
         });
+
+        window.addEventListener("keydown", (event) => {
+            const cameraMoveSpeed = 12;
+            if (event.key === "w" || event.key === "ArrowUp"){
+                this.position.y -= 1 * cameraMoveSpeed;
+            }
+
+            if (event.key === "s" || event.key === "ArrowDown"){
+                this.position.y += 1 * cameraMoveSpeed;
+            }
+
+            if (event.key === "a" || event.key === "ArrowLeft"){
+                this.position.x -= 1 * cameraMoveSpeed;
+            }
+
+            if (event.key === "d" || event.key === "ArrowRight"){
+                this.position.x += 1 * cameraMoveSpeed;
+            }
+
+            if (event.ctrlKey && (event.key === "ArrowUp" || event.key === "w")){
+                this.zoom += zoomAmount;
+            }
+
+            if (event.ctrlKey && (event.key === "ArrowDown" || event.key === "s")){
+                this.zoom -= zoomAmount;
+            }
+
+            const maxZoom = 4;
+            const minZoom = 0.1;
+            this.zoom = this.p5.constrain(this.zoom, minZoom, maxZoom);
+        });
+
+        
 
         this.mouseDown = false;
         window.addEventListener("mousedown", (event) => {
