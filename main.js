@@ -389,7 +389,7 @@ function createScene(){
     scenes[sceneName] = {
         cameraConfig:{
             "startingPosition":{
-                "x":-500,
+                "x":0,
                 "y":0
             },
             "defaultViewAmount":1920,
