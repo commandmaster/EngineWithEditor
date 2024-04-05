@@ -179,6 +179,23 @@ app.on('ready', function(){
             }
         },
         {
+            label:'Scene',
+            submenu:[
+                {
+                    label: 'Create Scene',
+                    click(){
+                        createScene();
+                    }
+                },
+                {
+                    label: 'Open Scene',
+                    submenu:[
+
+                    ]
+                }
+            ]
+        },
+        {
             label:'Scripting',
             submenu:[
                 {
@@ -338,4 +355,52 @@ function addToSubMenu(menu, submenuLabel, menuItem) {
     const foundMenu = recursiveMenuSearch(menu, submenuLabel);
     foundMenu.submenu.append(menuItem);
     
+}
+
+function createPrefab(){
+    if (!projectLoaded){
+        dialog.showErrorBox('Error', 'No project loaded');
+        return;
+    }
+
+    let prefabName = prompt('Prefab Name', 'Enter a name for the prefab');
+    prefabName = prefabName.trim();
+    prefabName = prefabName.replaceAll(' ', '_');
+
+    const prefabs = currentProject.gameConfigData.prefabs;
+    prefabs[prefabName] = {
+        components:{}
+    };
+
+    saveProject();
+}
+
+function createScene(){
+    if (!projectLoaded){
+        dialog.showErrorBox('Error', 'No project loaded');
+        return;
+    }
+
+    let sceneName = prompt('Scene Name', 'Enter a name for the scene');
+    sceneName = sceneName.trim();
+    sceneName = sceneName.replaceAll(' ', '_');
+
+    const scenes = currentProject.gameConfigData.scenes;
+    scenes[sceneName] = {
+        cameraConfig:{
+            "startingPosition":{
+                "x":-500,
+                "y":0
+            },
+            "defaultViewAmount":1920,
+            "zoom":1,
+            "willFollow":flase,
+            "followSettings":{
+                
+            }
+        },
+        gameObjects:{}
+    };
+
+    saveProject();
 }

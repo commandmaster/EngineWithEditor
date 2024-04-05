@@ -269,6 +269,24 @@ window.electronAPI.on('projectLoaded', (e, projectData) => {
   window.electronAPI.on('getGameData', (e) => {
     window.electronAPI.send('gameData', localStorage.getItem('gameData'));
   });
+
+  window.electronAPI.on('setGameData', (e, gameData) => {
+    if (gameData === undefined || gameData === null){
+      return;
+    }
+
+    else if (typeof gameData === 'string'){
+      localStorage.setItem('gameData', gameData);
+    }
+
+    else if (typeof gameData === 'object'){
+      localStorage.setItem('gameData', JSON.stringify(gameData));
+    }
+    
+    else {
+      console.error('Invalid gameData type', typeof gameData);
+    }
+  });
  
 });
 
