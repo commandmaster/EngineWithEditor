@@ -394,7 +394,7 @@ function createScene(){
             },
             "defaultViewAmount":1920,
             "zoom":1,
-            "willFollow":flase,
+            "willFollow":false,
             "followSettings":{
                 
             }
