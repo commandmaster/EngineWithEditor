@@ -9,12 +9,13 @@ const prompt = require('electron-prompt');
 const ejs = require('ejs');
 const Database = require('@bennettf/simpledb'); // My custom js json manipulation npm package
 
-const {dialog, app, BrowserWindow, Menu, shell, ipcMain,  nativeTheme, BrowserView} = electron;
+const {dialog, app, BrowserWindow, Menu, MenuItem, shell, ipcMain,  nativeTheme, BrowserView} = electron;
 
 let currentProject = {folderPath: null, projectName: null, gameConfigPath: null, gameConfigData: null};
 let projectLoaded = false;
 let edtiorLoaded = false;
-
+let mainWindow;
+let mainMenu;
 
 function waitForCondition(condition, timeBetweenChecks = 50){
     return new Promise((resolve, reject) => {
@@ -110,6 +111,24 @@ app.on('ready', function(){
             mainWindow.webContents.send('projectLoaded', currentProject);
         });
 
+        //Add current scripts to menu
+        const scriptsPath = path.join(pathToFolder, 'assets', 'scripts');
+        const scripts = await fs.promises.readdir(scriptsPath);
+
+        const scriptMenuItems = scripts.map((script) => {
+            return new MenuItem({
+                label: script,
+                click(){
+                    exec(`code ${path.join(scriptsPath, script)}`);
+                }
+            });
+        });
+
+
+        for (let scriptMenuItem of scriptMenuItems){
+            addToSubMenu(mainMenu, 'Open A Script', scriptMenuItem);
+        }
+
         console.log("Project Loaded: " + currentProject.projectName);
     }
     
@@ -168,6 +187,12 @@ app.on('ready', function(){
                     click(){
                         createScript();
                     }
+                },
+                {
+                    label: 'Open A Script',
+                    submenu:[
+                        
+                    ]
                 }
             ]
         },
@@ -190,9 +215,10 @@ app.on('ready', function(){
 
 
 
-    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
 
     Menu.setApplicationMenu(mainMenu);
+
 });
 
 function createGameWindow(currentProjectObj){
@@ -265,10 +291,11 @@ async function createScript(){
     let scriptName = await prompt({
         title:'Script Name',
         label:'Enter a name for the js script.',
-        value:'exampleScript'
+        value:'ExampleScript'
     });
 
     scriptName = scriptName.trim()
+    scriptName = scriptName.replaceAll(' ', '');
     scriptName = scriptName[0].toUpperCase() + scriptName.slice(1);
 
 
@@ -279,4 +306,37 @@ async function createScript(){
     const scriptPath = path.join(destinationPath, scriptName + '.js');
     const renderedTemplate = ejs.render(templateContent.toString(), {className: scriptName});
     fs.promises.writeFile(scriptPath, renderedTemplate, 'utf8');
+
+    const scriptMenuItem = new MenuItem({
+        label: scriptName,
+        click(){
+            exec(`code ${scriptPath}`);
+        }
+    });
+
+    addToSubMenu(mainMenu, 'Open A Script', scriptMenuItem);
+}
+
+function addToSubMenu(menu, submenuLabel, menuItem) {
+    function recursiveMenuSearch(parentMenu, itemLabelToFind){
+        let foundMenu = null;
+
+        for (item of parentMenu.items){
+            if (item.label === itemLabelToFind){
+                foundMenu = item;
+                break;
+            }
+
+            else if (item.submenu){
+                foundMenu = recursiveMenuSearch(item.submenu, itemLabelToFind);
+                if (foundMenu) break;
+            }
+        }
+
+        return foundMenu;
+    }
+
+    const foundMenu = recursiveMenuSearch(menu, submenuLabel);
+    foundMenu.submenu.append(menuItem);
+    
 }
