@@ -124,7 +124,6 @@ app.on('ready', function(){
             });
         });
 
-
         for (let scriptMenuItem of scriptMenuItems){
             addToSubMenu(mainMenu, 'Open A Script', scriptMenuItem);
         }
