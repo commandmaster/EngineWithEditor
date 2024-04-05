@@ -396,7 +396,12 @@ function createScene(){
             "zoom":1,
             "willFollow":false,
             "followSettings":{
-                
+                "objectToFollow":"",
+                "followSmoothness":0.1,
+                "deadZone":{
+                    "x":0,
+                    "y":0
+                }
             }
         },
         gameObjects:{}
