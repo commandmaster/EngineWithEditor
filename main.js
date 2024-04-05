@@ -124,6 +124,20 @@ app.on('ready', function(){
             });
         });
 
+        clearSubMenu(mainMenu, 'Open A Script');
+        clearSubMenu(mainMenu, 'Open Prefab');
+
+        for (let prefab of Object.keys(JSON.parse(gameConfigData).prefabs)){
+            const prefabMenuItem = new MenuItem({
+                label: prefab,
+                click(){
+                    exec(`code ${path.join(pathToFolder, 'assets', 'prefabs', prefab + '.json')}`);
+                }
+            });
+
+            addToSubMenu(mainMenu, 'Open Prefab', prefabMenuItem);
+        }
+
         for (let scriptMenuItem of scriptMenuItems){
             addToSubMenu(mainMenu, 'Open A Script', scriptMenuItem);
         }
@@ -189,6 +203,23 @@ app.on('ready', function(){
                 },
                 {
                     label: 'Open Scene',
+                    submenu:[
+
+                    ]
+                }
+            ]
+        },
+        {
+            label:'Objects',
+            submenu:[
+                {
+                    label: 'Create Prefab',
+                    click(){
+                        createPrefab();
+                    }
+                },
+                {
+                    label: 'Open Prefab',
                     submenu:[
 
                     ]
@@ -357,31 +388,66 @@ function addToSubMenu(menu, submenuLabel, menuItem) {
     
 }
 
-function createPrefab(){
+function clearSubMenu(menu, submenuLabel){
+    function recursiveMenuSearch(parentMenu, itemLabelToFind){
+        let foundMenu = null;
+
+        for (item of parentMenu.items){
+            if (item.label === itemLabelToFind){
+                foundMenu = item;
+                break;
+            }
+
+            else if (item.submenu){
+                foundMenu = recursiveMenuSearch(item.submenu, itemLabelToFind);
+                if (foundMenu) break;
+            }
+        }
+
+        return foundMenu;
+    }
+
+    const foundMenu = recursiveMenuSearch(menu, submenuLabel);
+    foundMenu.submenu.clear();
+
+}
+
+async function createPrefab(){
     if (!projectLoaded){
         dialog.showErrorBox('Error', 'No project loaded');
         return;
     }
 
-    let prefabName = prompt('Prefab Name', 'Enter a name for the prefab');
+    await saveProject();
+
+    let prefabName = await prompt('Prefab Name', 'Enter a name for the prefab');
     prefabName = prefabName.trim();
     prefabName = prefabName.replaceAll(' ', '_');
 
     const prefabs = currentProject.gameConfigData.prefabs;
     prefabs[prefabName] = {
+        name:prefabName,
         components:{}
     };
 
-    saveProject();
+    await loadProject(currentProject.folderPath);
+    addToSubMenu(mainMenu, 'Open Prefab', new MenuItem({
+        label: prefabName,
+        click(){
+            exec(`code ${path.join(currentProject.folderPath, 'assets', 'prefabs', prefabName + '.json')}`);
+        }
+    }));
 }
 
-function createScene(){
+async function createScene(){
     if (!projectLoaded){
         dialog.showErrorBox('Error', 'No project loaded');
         return;
     }
 
-    let sceneName = prompt('Scene Name', 'Enter a name for the scene');
+    await saveProject();
+
+    let sceneName = await prompt('Scene Name', 'Enter a name for the scene');
     sceneName = sceneName.trim();
     sceneName = sceneName.replaceAll(' ', '_');
 
@@ -404,8 +470,10 @@ function createScene(){
                 }
             }
         },
-        gameObjects:{}
+        gameObjects:{
+
+        }
     };
 
-    saveProject();
+    await loadProject(currentProject.folderPath);
 }
