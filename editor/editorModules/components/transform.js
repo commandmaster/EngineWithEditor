@@ -44,6 +44,14 @@ export default class Transform extends ComponentBase {
 
         this.#setWorldTransform();
     }
+
+    generateComponentConfig(){
+        return {
+            position: this.worldPosition,
+            rotation: this.worldRotation,
+            scale: this.worldScale
+        }
+    }
     //#endregion
 
     //#region Private Methods

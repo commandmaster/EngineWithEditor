@@ -61,6 +61,12 @@ class GuiElement {
             }
             
         }
+
+        //Update the transform component from the component
+        
+        this.refreshComponent("Transform", this.editorComponent.gameObject.components.Transform.generateComponentConfig());
+        
+
     }
 
     addComponent(componentName, componentConfig){
@@ -71,13 +77,41 @@ class GuiElement {
         this.#addFolderRecursive(folder, this.components[componentName]);
 
         if (componentName == "Transform"){
-            for (const controller of folder.__controllers){
-                controller.onChange = () => {
-                    console.log("updating transform")
-                    this.editorComponent.gameObject.components.Transform.updateFromNewConfig(this.components["Transform"]);
-                };
+            const revursiveControllerConfigurator = (folder) =>{
+                
+                folder.__controllers.forEach(controller => {
+                    controller.onChange(() => {
+                        this.editorComponent.gameObject.components.Transform.updateFromNewConfig(this.components[componentName]);
+                    });
+                });
+
+                Object.values(folder.__folders).forEach(folder => {
+                    revursiveControllerConfigurator(folder);
+                });
             }
+
+            revursiveControllerConfigurator(folder);
         }
+    }
+
+    refreshComponent(componentName, componentConfig){
+        this.components[componentName] = JSON.parse(JSON.stringify(componentConfig));
+
+        const recursiveRefresh = (folder, object) => {
+            for (const key in object){
+                if (typeof object[key] === "object"){
+                    recursiveRefresh(folder.__folders[key], object[key]);
+                }
+
+                else{
+                    folder.__controllers.find(controller => controller.property === key).setValue(object[key]);
+                }
+            }
+        
+        }
+
+        recursiveRefresh(this.folders[componentName], this.components[componentName]);
+
     }
 
     #addFolderRecursive(parentFolder, object){
