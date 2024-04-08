@@ -31,7 +31,12 @@ export default class ParticleSystem extends ModuleBase{
             this.systemInstances[systemName].Update();
         }
     }
+
+    Reset(){
+        this.systemInstances = {};
+    }
     //#endregion
+
 
 
 

@@ -80,6 +80,10 @@ export class GameObjectInstance {
         }
     }
     
+    Reset(){
+        this.components = {};
+    }
+
 }
 
 export class Camera{

@@ -83,14 +83,7 @@ app.on('ready', function(){
         fsExtra.copy(path.join(__dirname, '/templates/projectTemplate'), folderPath, async (err) => {
             if (err) throw err;
 
-            // let config = await fs.promises.readFile(path.join(folderPath, 'gameConfig.json'), 'utf8')
-            // config = JSON.parse(config);
-            // config.assets.assetsPath = folderPath + '/assets/';
-            // config = JSON.stringify(config);
-
-            // await fs.promises.writeFile(path.join(folderPath, 'gameConfig.json'), config, 'utf8');
-
-
+          
             loadProject(folderPath);
         });
 
@@ -99,51 +92,7 @@ app.on('ready', function(){
         
     }
 
-    async function loadProject(pathToFolder){
-        const projectName = path.basename(pathToFolder);
-        const gameConfigPath = path.join(pathToFolder, 'gameConfig.json');
-        const gameConfigData = await fs.promises.readFile(gameConfigPath, 'utf8');
 
-        currentProject = {folderPath: pathToFolder, projectName: projectName, gameConfigPath: gameConfigPath, gameConfigData: gameConfigData};
-        projectLoaded = true;
-
-        waitForCondition(edtiorLoaded).then(() => {
-            mainWindow.webContents.send('projectLoaded', currentProject);
-        });
-
-        //Add current scripts to menu
-        const scriptsPath = path.join(pathToFolder, 'assets', 'scripts');
-        const scripts = await fs.promises.readdir(scriptsPath);
-
-        const scriptMenuItems = scripts.map((script) => {
-            return new MenuItem({
-                label: script,
-                click(){
-                    exec(`code ${path.join(scriptsPath, script)}`);
-                }
-            });
-        });
-
-        clearSubMenu(mainMenu, 'Open A Script');
-        clearSubMenu(mainMenu, 'Open Prefab');
-
-        for (let prefab of Object.keys(JSON.parse(gameConfigData).prefabs)){
-            const prefabMenuItem = new MenuItem({
-                label: prefab,
-                click(){
-                    exec(`code ${path.join(pathToFolder, 'assets', 'prefabs', prefab + '.json')}`);
-                }
-            });
-
-            addToSubMenu(mainMenu, 'Open Prefab', prefabMenuItem);
-        }
-
-        for (let scriptMenuItem of scriptMenuItems){
-            addToSubMenu(mainMenu, 'Open A Script', scriptMenuItem);
-        }
-
-        console.log("Project Loaded: " + currentProject.projectName);
-    }
     
     const mainMenuTemplate = [
         {
@@ -203,6 +152,12 @@ app.on('ready', function(){
                 },
                 {
                     label: 'Open Scene',
+                    submenu:[
+
+                    ]
+                },
+                {
+                    label: 'Delete Scene',
                     submenu:[
 
                     ]
@@ -267,6 +222,60 @@ app.on('ready', function(){
     Menu.setApplicationMenu(mainMenu);
 
 });
+
+async function loadProject(pathToFolder){
+    const projectName = path.basename(pathToFolder);
+    const gameConfigPath = path.join(pathToFolder, 'gameConfig.json');
+    const gameConfigData = await fs.promises.readFile(gameConfigPath, 'utf8');
+
+    currentProject = {folderPath: pathToFolder, projectName: projectName, gameConfigPath: gameConfigPath, gameConfigData: gameConfigData};
+    projectLoaded = true;
+
+    waitForCondition(edtiorLoaded).then(() => {
+        mainWindow.webContents.send('projectLoaded', currentProject);
+        mainWindow.webContents.send('reloadGameConfig', gameConfigData);
+    });
+
+    //Add current scripts to menu
+    const scriptsPath = path.join(pathToFolder, 'assets', 'scripts');
+    const scripts = await fs.promises.readdir(scriptsPath);
+
+    const scriptMenuItems = scripts.map((script) => {
+        return new MenuItem({
+            label: script,
+            click(){
+                exec(`code ${path.join(scriptsPath, script)}`);
+            }
+        });
+    });
+
+    clearSubMenu(mainMenu, 'Open A Script');
+    clearSubMenu(mainMenu, 'Open Prefab');
+
+    clearSubMenu(mainMenu, 'Open Scene');
+    clearSubMenu(mainMenu, 'Delete Scene');
+
+    for (let scene in JSON.parse(gameConfigData).scenes){
+        MenuTools.addSceneToMenu(scene, mainMenu);
+
+        MenuTools.addToSubMenu(mainMenu, 'Delete Scene', new MenuItem({
+            label: scene,
+            click(){
+                const gameData = JSON.parse(gameConfigData);
+                delete gameData.scenes[scene];
+                fs.promises.writeFile(gameConfigPath, JSON.stringify(gameData), 'utf8');
+                loadProject(pathToFolder);
+            }
+        }));
+    }
+
+    for (let scriptMenuItem of scriptMenuItems){
+        MenuTools.addToSubMenu(mainMenu, 'Open A Script', scriptMenuItem);
+    }
+
+    console.log("Project Loaded: " + currentProject.projectName);
+}
+
 
 function createGameWindow(currentProjectObj){
     const gameWindow = new BrowserWindow({
@@ -431,12 +440,7 @@ async function createPrefab(){
     };
 
     await loadProject(currentProject.folderPath);
-    addToSubMenu(mainMenu, 'Open Prefab', new MenuItem({
-        label: prefabName,
-        click(){
-            exec(`code ${path.join(currentProject.folderPath, 'assets', 'prefabs', prefabName + '.json')}`);
-        }
-    }));
+    
 }
 
 async function createScene(){
@@ -445,13 +449,18 @@ async function createScene(){
         return;
     }
 
-    await saveProject();
+    try{
+        await saveProject();
+    }
+    catch(e){
+        console.error(e);
+    }
 
     let sceneName = await prompt('Scene Name', 'Enter a name for the scene');
     sceneName = sceneName.trim();
     sceneName = sceneName.replaceAll(' ', '_');
 
-    const scenes = currentProject.gameConfigData.scenes;
+    const scenes = JSON.parse(currentProject.gameConfigData).scenes;
     scenes[sceneName] = {
         cameraConfig:{
             "startingPosition":{
@@ -475,5 +484,83 @@ async function createScene(){
         }
     };
 
+    const gameData = JSON.parse(currentProject.gameConfigData);
+    gameData.scenes = scenes;
+    currentProject.gameConfigData = JSON.stringify(gameData);
+    await fs.promises.writeFile(currentProject.gameConfigPath, JSON.stringify(gameData), 'utf8');
+    
+    MenuTools.addSceneToMenu(sceneName, mainMenu);
+    console.log("Scene Created: " + sceneName);
+    console.log("path", currentProject.folderPath)
     await loadProject(currentProject.folderPath);
+
+    // Temporary fix for race conditions 
+    // Got stuck trying to fix the issue and am planning to come back to it
+    setTimeout(async () => {
+        await loadNewSceneInEditor(sceneName);
+    }, 300);
 }
+
+async function loadNewSceneInEditor(sceneName){
+    mainWindow.webContents.send('loadScene', sceneName);
+}
+
+class MenuTools{
+    static addToSubMenu(menu, submenuLabel, menuItem) {
+        function recursiveMenuSearch(parentMenu, itemLabelToFind){
+            let foundMenu = null;
+    
+            for (item of parentMenu.items){
+                if (item.label === itemLabelToFind){
+                    foundMenu = item;
+                    break;
+                }
+    
+                else if (item.submenu){
+                    foundMenu = recursiveMenuSearch(item.submenu, itemLabelToFind);
+                    if (foundMenu) break;
+                }
+            }
+    
+            return foundMenu;
+        }
+    
+        const foundMenu = recursiveMenuSearch(menu, submenuLabel);
+        foundMenu.submenu.append(menuItem);
+        
+    }
+
+    static clearSubMenu(menu, submenuLabel){
+        function recursiveMenuSearch(parentMenu, itemLabelToFind){
+            let foundMenu = null;
+    
+            for (item of parentMenu.items){
+                if (item.label === itemLabelToFind){
+                    foundMenu = item;
+                    break;
+                }
+    
+                else if (item.submenu){
+                    foundMenu = recursiveMenuSearch(item.submenu, itemLabelToFind);
+                    if (foundMenu) break;
+                }
+            }
+    
+            return foundMenu;
+        }
+    
+        const foundMenu = recursiveMenuSearch(menu, submenuLabel);
+        foundMenu.submenu.clear();
+    
+    }
+
+    static addSceneToMenu(sceneName, menu){
+        MenuTools.addToSubMenu(menu, 'Open Scene', new MenuItem({
+            label: sceneName,
+            click(){
+                loadNewSceneInEditor(sceneName);
+            }
+        }));
+    }
+}
+

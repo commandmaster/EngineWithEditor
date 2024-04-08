@@ -281,6 +281,7 @@ export default class Renderer extends ModuleBase{
                 resolve();
             }
             catch(err){
+                console.log(err)
                 reject(err);
             }
         });
@@ -290,13 +291,17 @@ export default class Renderer extends ModuleBase{
 
     Start(){
         this.p5.createCanvas(this.gameConfig.renderSettings.canvasSizeX, this.gameConfig.renderSettings.canvasSizeY);
-
+        this.renderQueue = [];
         this.enableCameraRendering = false;
     }
 
     Update(){
         this.#Render();
 
+    }
+
+    Reset(){
+        this.renderQueue = [];
     }
 
     #Render(){
@@ -319,19 +324,25 @@ export default class Renderer extends ModuleBase{
             }   
         }
 
-        for (const renderable of this.renderQueue){
-            // could be a bunch of or statements but this is cleaner
-
-            if (renderable instanceof AnimationRenderTask) renderable.render();
-
-            if (renderable instanceof BoxColliderRenderTask) renderable.render();
-            
-            if (renderable instanceof CircleColliderRenderTask) renderable.render();
-
-            if (renderable instanceof ParticleRenderTask) renderable.render();
-            
-            if (renderable instanceof CustomRenderTask) renderable.render();
-
+        if (typeof this.renderQueue === 'object'){
+            for (const renderable of this.renderQueue){
+                // could be a bunch of or statements but this is cleaner
+    
+                if (renderable instanceof AnimationRenderTask) renderable.render();
+    
+                if (renderable instanceof BoxColliderRenderTask) renderable.render();
+                
+                if (renderable instanceof CircleColliderRenderTask) renderable.render();
+    
+                if (renderable instanceof ParticleRenderTask) renderable.render();
+                
+                if (renderable instanceof CustomRenderTask) renderable.render();
+    
+            }
+        }
+        
+        else{
+            console.log(typeof this.renderQueue)
         }
 
         this.renderQueue = [];

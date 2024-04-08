@@ -70,6 +70,12 @@ let firstUpdate = false
 let game = function(p5){
   let gameEngine = new Engine(p5);
 
+  window.electronAPI.on('reloadGameConfig', (e, config) => {
+    localStorage.setItem('gameData', config);
+    gameEngine.ReloadGameConfig();
+  });
+
+
   p5.preload = async function(){
     await gameEngine.Preload();
     preloadDone = true;
@@ -151,7 +157,14 @@ class Engine {
     this.renderer.Start();
     this.editorSystem.Start();
 
-    this.#loadScene("level1");
+    const defaultScene = this.gameConfig.defaultScene;
+    this.#loadScene(defaultScene);
+
+    window.electronAPI.on('loadScene', (e, sceneName) => {
+      this.#loadScene(sceneName);
+      console.log('Scene Loaded', sceneName);
+      
+    });
   }
 
   
@@ -164,6 +177,13 @@ class Engine {
     this.particleSystem.Update(dt);
     this.renderer.Update(dt);
     this.editorSystem.Update(dt);
+  }
+
+  ReloadGameConfig(){
+    this.#loadGameConfigAsync().then((gameConfig) => {
+      this.gameConfig = gameConfig;
+      this.#loadPrefabs(gameConfig);
+    });
   }
 
   //#endregion
@@ -187,6 +207,7 @@ class Engine {
   }
 
   #loadPrefabs(gameConfig){
+    this.prefabs = {};
     for (const prefabName in gameConfig.prefabs){
       const prefab = gameConfig.prefabs[prefabName];
       this.prefabs[prefabName] = prefab;
@@ -196,6 +217,16 @@ class Engine {
   async #loadScene(sceneName){
     this.currentSceneName = sceneName;
 
+    // Reset all systems
+    this.particleSystem.Reset();
+    this.renderer.Reset();
+    this.editorSystem.Reset();
+
+    //Reset all objects
+    this.instantiatedObjects = {};
+
+
+    
     const scene = this.gameConfig.scenes[sceneName];
     const cameraConfig = this.gameConfig.scenes[sceneName].cameraConfig;
     const cameraInstance = new Camera(this.engineAPI, cameraConfig);
@@ -287,6 +318,8 @@ window.electronAPI.on('projectLoaded', (e, projectData) => {
       console.error('Invalid gameData type', typeof gameData);
     }
   });
+
+  
  
 });
 

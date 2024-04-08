@@ -27,7 +27,16 @@ export default class EditorSystem extends ModuleBase{
                 }
             }
         });
-            
+    }
+
+    Reset(){
+        for (const obj of this.editorComponents){
+            obj.inspector.Hide();
+        }
+
+        this.editorComponents = [];
+        this.highlightedObject = null;
+        
     }
 
     //#region 

@@ -155,7 +155,7 @@ export default class EditorComponent extends ComponentBase{
     }
 
     Update(){
-        this.inspector.SaveConfigsToGameData();
+        if (this.inspector) this.inspector.SaveConfigsToGameData();
         if (!this.showEditor) return;        
 
         if (this.mode === "translate"){

@@ -19,4 +19,8 @@ export default class ModuleBase {
     Update(dt) {
         return;
     }
+
+    Reset() {
+        return;
+    }
 }

@@ -169,6 +169,7 @@
         }
         
     },
+    "defaultScene":"level1",
     "prefabs":{
         "player":{
             "name":"player",
