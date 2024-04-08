@@ -59,6 +59,7 @@ class GuiElement {
             if (folder === "Rigidbody"){
                 this.editorComponent.gameObject.components.Rigidbody.updateFromNewConfig(this.components[folder]);
             }
+            
         }
     }
 
@@ -68,6 +69,15 @@ class GuiElement {
 
         this.folders[componentName] = folder;
         this.#addFolderRecursive(folder, this.components[componentName]);
+
+        if (componentName == "Transform"){
+            for (const controller of folder.__controllers){
+                controller.onChange = () => {
+                    console.log("updating transform")
+                    this.editorComponent.gameObject.components.Transform.updateFromNewConfig(this.components["Transform"]);
+                };
+            }
+        }
     }
 
     #addFolderRecursive(parentFolder, object){

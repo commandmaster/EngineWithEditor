@@ -36,6 +36,14 @@ export default class Transform extends ComponentBase {
         this.#setWorldTransform();
         this.#updateStoredConfig();
     }
+
+    updateFromNewConfig(newConfig){
+        this.SetLocalFromWorld(newConfig.position);
+        this.SetLocalRotFromWorld(newConfig.rotation);
+        this.localScale = newConfig.scale;
+
+        this.#setWorldTransform();
+    }
     //#endregion
 
     //#region Private Methods

@@ -350,7 +350,7 @@ async function createScript(){
         value:'ExampleScript'
     });
 
-    scriptName = scriptName.trim()
+    scriptName = scriptName.trim();
     scriptName = scriptName.replaceAll(' ', '');
     scriptName = scriptName[0].toUpperCase() + scriptName.slice(1);
 
