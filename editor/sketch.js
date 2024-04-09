@@ -49,17 +49,11 @@ class Inspector extends GuiElement {
 
 
 
-
-
-
-
-
 //#region Imports
 import Renderer from './editorModules/modules/renderer.js';
 import ParticleSystem from './editorModules/modules/particleSystem.js';
 import EditorSystem from './editorModules/modules/editorSystem.js';
 import {GameObjectInstance, Camera}  from './editorModules/engineObjects.js';
-
 //#endregion
 
 

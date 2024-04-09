@@ -30,14 +30,45 @@ class GuiElement {
 
         this.components = {};
         this.folders = {};
+
+
+        this.#inspectorFolder.add({AddComponent: () => {
+            brompt("Enter the name of the new component", (val) => {
+                if (val === "") return;
+                if (this.editorComponent.gameObject.components[val]){
+                    console.log("Component already exists");
+                    return;
+                }
+
+                if (val === "EditorComponent"){
+                    console.log("Cannot add EditorComponent");
+                    return;
+                }
+
+                if (!(["Transform", "Rigidbody", "ParticleSystem", "StateMachine"].includes(val))) {
+                    console.log("Component name not valid");
+                    return;
+                }
+
+
+                const newComponentName = val;
+                this.editorComponent.gameObject.createComponentFromDefault(newComponentName);
+                this.addComponent(newComponentName, this.editorComponent.gameObject.components[newComponentName].componentConfig);
+                
+            });  
+        }}, "AddComponent");
+
+        this.#inspectorFolder.add({RemoveComponent: () => {
+            this.editorComponent.gameObject.RemoveComponent(component);
+            this.folders[component].close();
+            this.#inspectorFolder.removeFolder(this.folders[component]);
+        }}, "RemoveComponent");
     }
   
     Show(){
-      super.Show();
-      
-  
-      this.#inspectorFolder.open();
-  
+        super.Show();
+        this.#inspectorFolder.open();
+        
     }
   
     Hide(){

@@ -84,6 +84,28 @@ export class GameObjectInstance {
         this.components = {};
     }
 
+    createComponentFromDefault(componentName){
+        const defaults = {
+            "Transform": {
+                "position": {x: 0, y: 0},
+                "rotation": 0,
+                "scale": {x: 1, y: 1}
+            },
+            "Rigidbody": {
+                "colliders": []
+            },
+            "StateMachine": {
+                "stateMachineName": "Insert State Machine Name Here"
+            },
+            "ParticleSystem": {
+                "particleSystemName": "Insert Particle System Name Here"
+            }
+        }
+
+        const componentConfig = defaults[componentName];
+        this.#addComponent(componentName, componentConfig);
+    }
+
 }
 
 export class Camera{
