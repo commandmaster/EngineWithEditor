@@ -17,7 +17,7 @@ class GuiElement {
     Hide(){
       this.datGui.hide();
     }  
-  }
+}
   
   class Inspector extends GuiElement {
     #inspectorFolder;
@@ -56,17 +56,21 @@ class GuiElement {
         }
 
         for (const folder in this.folders){
+            // Update Rigidbody component from the component
             if (folder === "Rigidbody"){
                 this.editorComponent.gameObject.components.Rigidbody.updateFromNewConfig(this.components[folder]);
             }
-            
+
+            // Update other components from the component
+            else if (folder !== "Transform"){
+                this.editorComponent.gameObject.components[folder].updateFromNewConfig(this.components[folder]);
+            }
         }
 
-        //Update the transform component from the component
-        
-        this.refreshComponent("Transform", this.editorComponent.gameObject.components.Transform.generateComponentConfig());
-        
-
+        // Update the transform component from the component
+        if (this.editorComponent.gameObject.components.Transform.transformUpdated){
+            this.refreshComponent("Transform", this.editorComponent.gameObject.components.Transform.generateComponentConfig());
+        }
     }
 
     addComponent(componentName, componentConfig){
@@ -78,18 +82,21 @@ class GuiElement {
 
         if (componentName == "Transform"){
             const revursiveControllerConfigurator = (folder) =>{
-                
+                // Add onChange event listener to each controller in the folder
                 folder.__controllers.forEach(controller => {
                     controller.onChange(() => {
-                        this.editorComponent.gameObject.components.Transform.updateFromNewConfig(this.components[componentName]);
+                        // Check if the transform has been updated before updating from new config
+                        if (!this.editorComponent.gameObject.components.Transform.transformUpdated) this.editorComponent.gameObject.components.Transform.updateFromNewConfig(this.components[componentName]);
                     });
                 });
 
+                // Recursively configure controllers in sub-folders
                 Object.values(folder.__folders).forEach(folder => {
                     revursiveControllerConfigurator(folder);
                 });
             }
 
+            // Start recursive configuration
             revursiveControllerConfigurator(folder);
         }
     }
@@ -100,16 +107,19 @@ class GuiElement {
         const recursiveRefresh = (folder, object) => {
             for (const key in object){
                 if (typeof object[key] === "object"){
+                    // Recursively refresh sub-folders
                     recursiveRefresh(folder.__folders[key], object[key]);
                 }
 
                 else{
+                    // Find the controller with the matching property and set its value
                     folder.__controllers.find(controller => controller.property === key).setValue(object[key]);
                 }
             }
         
         }
 
+        // Start recursive refresh
         recursiveRefresh(this.folders[componentName], this.components[componentName]);
 
     }
@@ -117,12 +127,15 @@ class GuiElement {
     #addFolderRecursive(parentFolder, object){
         for (const key in object){
             if (typeof object[key] === "object"){
+                // Create a new folder for nested objects
                 const folder = parentFolder.addFolder(key);
 
+                // Recursively add sub-folders and properties
                 this.#addFolderRecursive(folder, object[key]);
             }
 
             else{
+                // Add property to the parent folder
                 parentFolder.add(object, key);
             }
         }
@@ -141,21 +154,26 @@ export default class EditorComponent extends ComponentBase{
     }
 
     Start(){
+        // Add this editor object to the editor system
         this.engine.editorSystem.AddEditorObject(this);
+        
+        // Create an instance of the Inspector class
         this.inspector = new Inspector(this.p5, this);
         this.inspector.Hide();
 
+        // Add components to the inspector
         for (const component in this.gameObject.components){
             if (component !== "EditorComponent"){
                 this.inspector.addComponent(component, this.gameObject.components[component].componentConfig);
             }
         }
         
-
+        // Initialize variables
         this.showEditor = false;
         this.isDragging = false;
         this.mode = "translate";
 
+        // Add event listeners for mouse and keyboard input
         window.addEventListener("mousedown", (e) => {
             if (e.button === 0){
                 const clickedPos = this.engineAPI.engine.renderer.camera.ScreenToWorld({x: e.clientX, y: e.clientY});
@@ -168,6 +186,7 @@ export default class EditorComponent extends ComponentBase{
                 }
 
                 if (isWithRadius(pos, clickedPos, clickedOnRadius)){
+                    // Highlight the object in the editor system
                     this.engineAPI.engine.editorSystem.HighlightObject(this);
                     this.showEditor = true;
                     this.isDragging = true;
@@ -203,11 +222,13 @@ export default class EditorComponent extends ComponentBase{
         if (!this.showEditor) return;        
 
         if (this.mode === "translate"){
+            // Render translation arrows
             this.#translateDebugRender();
 
             if (this.isDragging){
                 const pos = this.engineAPI.engine.renderer.camera.ScreenToWorld({x: this.p5.mouseX, y: this.p5.mouseY});
 
+                // Update local position based on mouse drag
                 //this.gameObject.components.Transform.localPosition = pos;
                 this.gameObject.components.Transform.SetLocalFromWorld(pos);
                 
@@ -218,8 +239,10 @@ export default class EditorComponent extends ComponentBase{
             const dir = this.engineAPI.engine.renderer.camera.ScreenToWorld({x: this.p5.mouseX, y: this.p5.mouseY});
             const pos = this.gameObject.components.Transform.worldPosition;
 
+            // Calculate angle between object and mouse position
             const angle = Math.atan2(dir.y - pos.y, dir.x - pos.x);
 
+            // Update local rotation based on mouse position
             this.gameObject.components.Transform.SetLocalRotFromWorld(angle * 180 / Math.PI)
             this.#rotateDebugRender();
         }
@@ -264,8 +287,7 @@ export default class EditorComponent extends ComponentBase{
             p5.translate(arrowOffsetsX, 0)
             p5.scale(0.2);
             
-            
-            
+            // Render the rotation arrow
             p5.tint(0, 0, 255, 10000);
             p5.image(img, 0, 0);
             p5.pop();

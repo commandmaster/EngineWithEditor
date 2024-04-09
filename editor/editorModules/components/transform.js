@@ -11,6 +11,8 @@ export default class Transform extends ComponentBase {
     localPosition;
     localRotation;
     localScale;
+
+    #transformUpdated = false;
     //#endregion
 
     constructor(engineAPI, componentConfig, gameObject) {
@@ -33,24 +35,9 @@ export default class Transform extends ComponentBase {
     }
 
     Update() {
+        this.#transformUpdated = this.#checkHasTransformChanged();
         this.#setWorldTransform();
         this.#updateStoredConfig();
-    }
-
-    updateFromNewConfig(newConfig){
-        this.SetLocalFromWorld(newConfig.position);
-        this.SetLocalRotFromWorld(newConfig.rotation);
-        this.localScale = newConfig.scale;
-
-        this.#setWorldTransform();
-    }
-
-    generateComponentConfig(){
-        return {
-            position: this.worldPosition,
-            rotation: this.worldRotation,
-            scale: this.worldScale
-        }
     }
     //#endregion
 
@@ -92,11 +79,33 @@ export default class Transform extends ComponentBase {
         }
     }
 
+    #checkHasTransformChanged(){
+        let hasChanged = false;
+        if (this.lastWorldPosition === undefined || this.lastWorldRotation === undefined || this.lastWorldScale === undefined) {
+            this.lastWorldPosition = this.worldPosition;
+            this.lastWorldRotation = this.worldRotation;
+            this.lastWorldScale = this.worldScale;
+        }
+
+        if (this.lastWorldPosition.x !== this.worldPosition.x || this.lastWorldPosition.y !== this.worldPosition.y) hasChanged = true;
+        if (this.lastWorldRotation !== this.worldRotation) hasChanged = true;
+        if (this.lastWorldScale.x !== this.worldScale.x || this.lastWorldScale.y !== this.worldScale.y) hasChanged = true;
+
+        this.lastWorldPosition = this.worldPosition;
+        this.lastWorldRotation = this.worldRotation;
+        this.lastWorldScale = this.worldScale;
+
+        this.lastWorldRotation = this.lastWorldRotation;
+        this.lastWorldScale = this.lastWorldScale;
+
+        return hasChanged;
+    }
+
     #updateStoredConfig(){
         const storedConfig = JSON.parse(localStorage.getItem('gameData'));
         const name = this.gameObject.gameObjectConfig.name;
 
-        let transform = storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents["Transform"];
+        let transform = storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents["Transform"]; // get transform from stored config
 
         if (transform === undefined || transform === undefined) {
             transform = {}
@@ -105,7 +114,7 @@ export default class Transform extends ComponentBase {
         transform.position = this.localPosition;
         transform.rotation = this.localRotation;
         transform.scale = this.localScale;
-        storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents["Transform"] = transform;
+        storedConfig.scenes[this.engineAPI.engine.currentSceneName].gameObjects[name].overideComponents["Transform"] = transform; // update stored config with new transform
         
 
         localStorage.setItem('gameData', JSON.stringify(storedConfig));
@@ -120,7 +129,7 @@ export default class Transform extends ComponentBase {
         }
 
 
-        this.parentTransform = ScriptingAPI.getComponentByName(this.engineAPI, this.gameObject.parent, "Transform");
+        this.parentTransform = ScriptingAPI.getComponentByName(this.engineAPI, this.gameObject.parent, "Transform"); // get parent transform
         const parentPosition = this.parentTransform.worldPosition;
         const parentRotation = this.parentTransform.worldRotation;
 
@@ -147,6 +156,22 @@ export default class Transform extends ComponentBase {
         this.localRotation = worldRotation - this.parentTransform.worldRotation;
         this.#setWorldTransform(); // update world transform based on new local rotation
     }
+
+    updateFromNewConfig(newConfig){
+        this.SetLocalFromWorld(newConfig.position);
+        this.SetLocalRotFromWorld(newConfig.rotation);
+        this.localScale = newConfig.scale;
+
+        this.#setWorldTransform();
+    }
+
+    generateComponentConfig(){
+        return {
+            position: this.worldPosition,
+            rotation: this.worldRotation,
+            scale: this.worldScale
+        }
+    }
     //#endregion
 
     //#region Getters and Setters
@@ -160,6 +185,10 @@ export default class Transform extends ComponentBase {
 
     get worldScale() {
         return this.worldScale;
+    }
+
+    get transformUpdated(){
+        return this.#transformUpdated;
     }
     //#endregion
 }

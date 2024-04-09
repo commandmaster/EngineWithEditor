@@ -70,9 +70,9 @@ export default class Rigidbody extends ComponentBase {
     
         
 
-        if (shouldDebug){
-            this.#debugRender();
-        }
+        // if (shouldDebug){
+        //     this.#debugRender();
+        // }
     }
 
     //#endregion

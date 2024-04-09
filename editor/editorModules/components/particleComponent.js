@@ -26,25 +26,26 @@ class ParticleInstance{
 
     //#region Particle Callbacks
     Start(){
-
+        return;
     }
 
     Update(dt){
         // integrate velocity, acceleration, and position using semi implicit euler method (https://gafferongames.com/post/integration_basics/)
-        this.velocity.x += this.acceleration.x * dt / 1000;
-        this.velocity.y += this.acceleration.y * dt / 1000;
+        this.velocity.x += this.acceleration.x * dt / 1000; // update velocity in x direction
+        this.velocity.y += this.acceleration.y * dt / 1000; // update velocity in y direction
 
-        this.localPosition.x += this.velocity.x * dt / 1000; 
-        this.localPosition.y += this.velocity.y * dt / 1000;
+        this.localPosition.x += this.velocity.x * dt / 1000; // update local position in x direction
+        this.localPosition.y += this.velocity.y * dt / 1000; // update local position in y direction
 
-        this.rotation += this.angularVelocity * dt / 1000;
+        this.rotation += this.angularVelocity * dt / 1000; // update rotation
 
-        this.#render();
+        this.#render(); // render the particle
     }
     //#endregion
 
     //#region Private Methods
     #initialize(particleObj){
+        // Initialize the particle with the given attributes
         this.texture = this.engineAPI.engine.renderer.textures[particleObj.textureName];
         this.color = particleObj.color;
         this.position = particleObj.position;
@@ -59,7 +60,17 @@ class ParticleInstance{
     }
 
     #render(){
-        const particleRenderTask = new RendererAPI.ParticleRenderTask(this.engineAPI, {texture: this.texture, color: this.color, position: this.position, rotation: this.rotation, transparency: this.transparency, size: this.size});
+        // Create a particle render task with the particle attributes
+        const particleRenderTask = new RendererAPI.ParticleRenderTask(this.engineAPI, {
+            texture: this.texture,
+            color: this.color,
+            position: this.position,
+            rotation: this.rotation,
+            transparency: this.transparency,
+            size: this.size
+        });
+
+        // Add the particle render task to the renderer
         this.engineAPI.engine.renderer.addRenderTask(particleRenderTask);
     }
     //#endregion
@@ -122,13 +133,19 @@ class ParticleEmitterInstance{
     }
 
     Update(){
+        // If the emitter is not enabled and there is no fade out, return
         if (!this.#enabled && !this.#shouldFadeOut) return;
         
-        const dt = Math.min(performance.now() - this.#lastUpdateTime, 50); // Capping the delta time to 50ms to prevent unwanted behavior
+        // Calculate the delta time (dt) and cap it at 50ms to prevent unwanted behavior
+        const dt = Math.min(performance.now() - this.#lastUpdateTime, 50);
+        
+        // Increment the runtime by dt
         this.#runtime += dt;
 
+        // Update the particles
         this.#updateParticles(dt);
         
+        // Update the last update time
         this.#lastUpdateTime = performance.now();
     }
     //#endregion
@@ -396,5 +413,9 @@ export default class ParticleComponent extends ComponentBase{
 
     IsEnabled(){
         return this.systemInstance.IsEnabled;
+    }
+
+    updateFromNewConfig(newConfig){
+        this.componentConfig = newConfig;
     }
 }

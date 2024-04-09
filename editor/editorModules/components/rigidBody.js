@@ -56,17 +56,29 @@ export default class Rigidbody extends ComponentBase {
             let task;
 
             if (collider.type === "circle"){
-                const x = this.gameObject.components.Transform.worldPosition.x + collider.colliderConfig.offsetX, y = this.gameObject.components.Transform.worldPosition.y + collider.colliderConfig.offsetY;
-                const rot = this.gameObject.components.Transform.worldRotation
-                task = new RendererAPI.CircleColliderRenderTask(this.engineAPI, {x, y, radius: collider.colliderConfig.radius, rotation: rot});
+            const { x, y } = this.gameObject.components.Transform.worldPosition;
+            const { offsetX, offsetY } = collider.colliderConfig;
+            const rot = this.gameObject.components.Transform.worldRotation;
+            const degToRad = Math.PI / 180;
+            const transformedX = x + offsetX * Math.cos(rot * degToRad) - offsetY * Math.sin(rot * degToRad);
+            const transformedY = y + offsetX * Math.sin(rot * degToRad) + offsetY * Math.cos(rot * degToRad);
+            // Create a CircleColliderRenderTask with the transformed position and rotation
+            task = new RendererAPI.CircleColliderRenderTask(this.engineAPI, {x:transformedX, y:transformedY, radius: collider.colliderConfig.radius, rotation: rot});
             }
 
             else if (collider.type === "box"){
-                const x = this.gameObject.components.Transform.worldPosition.x + collider.colliderConfig.offsetX, y = this.gameObject.components.Transform.worldPosition.y + collider.colliderConfig.offsetY;
-                const rot = this.gameObject.components.Transform.worldRotation 
-                task = new RendererAPI.BoxColliderRenderTask(this.engineAPI, {x, y, width: collider.colliderConfig.width, height: collider.colliderConfig.height, rotation: rot});
+            const { x, y } = this.gameObject.components.Transform.worldPosition;
+            const { offsetX, offsetY } = collider.colliderConfig;
+            const rot = this.gameObject.components.Transform.worldRotation;
+            const degToRad = Math.PI / 180;
+            const transformedX = x + offsetX * Math.cos(rot * degToRad) - offsetY * Math.sin(rot * degToRad);
+            const transformedY = y + offsetX * Math.sin(rot * degToRad) + offsetY * Math.cos(rot * degToRad);
+            
+            // Create a BoxColliderRenderTask with the transformed position, size, and rotation
+            task = new RendererAPI.BoxColliderRenderTask(this.engineAPI, {x:transformedX, y:transformedY, width: collider.colliderConfig.width, height: collider.colliderConfig.height, rotation: rot});
             }
 
+            // Add the render task to the renderer
             this.engineAPI.engine.renderer.addRenderTask(task);
         }
     }

@@ -1,6 +1,9 @@
 import ComponentBase from './componentBase.js';
 import { RendererAPI} from '../modules/renderer.js';
 
+// StateMachine doesn't have proper animation states and transitions yet will be added in a future update
+
+
 export default class StateMachine extends ComponentBase{
     constructor(engineAPI, componentConfig, gameObject) {
         super(engineAPI, componentConfig, gameObject);
@@ -43,6 +46,10 @@ export default class StateMachine extends ComponentBase{
         for (const animation in this.animations){
             this.animations[animation].Update();
         }
+    }
+
+    updateFromNewConfig(newConfig){
+        this.componentConfig = newConfig;
     }
 
 }
